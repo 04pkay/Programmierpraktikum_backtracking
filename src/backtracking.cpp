@@ -1,0 +1,52 @@
+//
+// Created by Pascal Kessler on 18.03.23.
+//
+
+#include "../include/SAT.h"
+#include <iostream>
+#include <vector>
+#include <stack>
+
+void set_variable(int temp, SAT & instanz, std::vector<int> VariableState) {
+    if (VariableState[temp-1] > 0) {
+        VariableState[temp-1] = -1;
+        instanz.set_variable(temp, false);
+    }
+    else {
+        VariableState[temp-1] = 1;
+        instanz.set_variable(temp, true);
+    }
+}
+
+std::pair<bool,SAT> backtracking(SAT & instanz) {
+    std::pair<bool,SAT> final = std::make_pair (false,instanz);
+    u_long NumVariables = instanz.get_number_variables();
+    std::stack<int> EachVariable;
+    std::stack<int> BackTrack;
+    std::vector<int> VariableState;
+    for (int i = NumVariables; i>0; i -= 1) {
+        EachVariable.push(i);
+        VariableState.push_back(0);
+    }
+    int temp = EachVariable.top();
+    EachVariable.pop();
+    BackTrack.push(temp);
+    set_variable(temp, instanz, VariableState[temp-1]);
+    while (VariableState[0] != 0) {
+        if (instanz.check_if_satisfied()) {
+            return std::make_pair (true,instanz);
+        }
+        if (instanz.check_if_still_satisfiable()) {
+            temp = EachVariable.top();
+            EachVariable.pop();
+            BackTrack.push(temp);
+            set_variable(temp, instanz, VariableState[temp-1]);
+        }
+        else {
+            EachVariable.push(temp);
+            VariableState[temp-1] = 0;
+            instanz.reset_variable(temp);
+        }
+    }
+
+}

@@ -13,6 +13,7 @@ public:
     explicit SAT(char const* filename);
     void print() const;
     void set_variable(int variable, bool setting);
+    void reset_variable(int variable);
     bool check_if_satisfied() const;
     bool check_if_still_satisfiable() const;
     u_long get_number_variables() const;

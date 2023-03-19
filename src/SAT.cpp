@@ -66,7 +66,18 @@ void SAT::print() const{
 }
 
 void SAT::set_variable(int variable, bool setting) {
-
+    for (auto & clause : instanz) {
+        for (auto & tuple : clause) {
+            if (std::get<0>(tuple) == variable) {
+                if (std::get<1>(tuple) == setting) {
+                    std::get<2>(tuple) = 1;
+                }
+                else {
+                    std::get<2>(tuple) = -1;
+                }
+            }
+        }
+    }
 }
 
 bool SAT::check_if_satisfied() const{
@@ -102,6 +113,16 @@ bool SAT::check_if_still_satisfiable() const {
         }
         if (not satisfiable) {
             return false;
+        }
+    }
+}
+
+void SAT::reset_variable(int variable) {
+    for (auto & clause : instanz) {
+        for (auto & tuple : clause) {
+            if (std::get<0>(tuple) == variable) {
+                std::get<2>(tuple) = 0;
+            }
         }
     }
 };
