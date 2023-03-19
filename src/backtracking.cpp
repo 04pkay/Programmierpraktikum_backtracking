@@ -12,9 +12,9 @@ void set_variable(int temp, SAT & instanz, std::vector<int> & VariableState) {
         VariableState[temp-1] = -1;
         instanz.set_variable(temp, false);
     }
-    else {
-        VariableState[temp-1] = 1;
-        instanz.set_variable(temp, true);
+    if (VariableState[temp-1] < 0) {
+        VariableState[temp-1] = 0;
+        instanz.reset_variable(temp);
     }
 }
 
@@ -31,26 +31,42 @@ std::pair<bool,SAT> backtracking(SAT & instanz) {
     int temp = EachVariable.top();
     EachVariable.pop();
     BackTrack.push(temp);
-    set_variable(temp, instanz, VariableState);
+    VariableState[temp-1] = 1;
+    instanz.set_variable(temp, true);
+    if (not instanz.check_if_still_satisfiable()) {
+        VariableState[temp - 1] = -1;
+        instanz.set_variable(temp, false);
+    }
+    temp = EachVariable.top();
+    EachVariable.pop();
+    BackTrack.push(temp);
     while (VariableState[0] != 0) {
         if (instanz.check_if_satisfied()) {
-            return std::make_pair (true,instanz);
+            return std::make_pair(true, instanz);
         }
         if (instanz.check_if_still_satisfiable()) {
+            VariableState[temp - 1] = 1;
+            instanz.set_variable(temp, true);
             temp = EachVariable.top();
             EachVariable.pop();
             BackTrack.push(temp);
-            set_variable(temp, instanz, VariableState);
         }
         else {
-            std::cout << "GHJHGFGHJKHGFGHJK" << std::endl;
-            EachVariable.push(temp);
-            VariableState[temp-1] = 0;
-            instanz.reset_variable(temp);
-            temp = BackTrack.top();
-            BackTrack.pop();
+            if (VariableState[temp - 1] > 0) {
+                VariableState[temp - 1] = -1;
+                instanz.set_variable(temp, false);
+            }
+            else {
+                VariableState[temp-1] = 0;
+                instanz.reset_variable(temp);
+                BackTrack.pop();
+                EachVariable.push(temp);
+                try {temp = BackTrack.top();}
+                catch (...) {
+                    return final;
+                }
+            }
         }
     }
-    instanz.print();
     return final;
 }

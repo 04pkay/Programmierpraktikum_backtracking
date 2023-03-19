@@ -52,7 +52,10 @@ SAT::SAT(char const* filename) {
                 instanz.push_back(clause);
                 clause.clear();
             }
-            ss >> temp;
+            try {ss >> temp;}
+            catch (...) {
+                break;
+            }
         }
     }
 }
@@ -111,7 +114,6 @@ bool SAT::check_if_still_satisfiable() const {
         for (auto & tuple : clause) {
             if (std::get<2>(tuple) != -1) {
                 satisfiable = true;
-                std::cout << "HALLO HALLO" << std::endl;
             }
         }
         if (not satisfiable) {

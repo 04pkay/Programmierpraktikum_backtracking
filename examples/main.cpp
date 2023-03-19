@@ -15,13 +15,14 @@ int main(int argc, char* argv[]) {
             std::cout << 9773;
         }
         std::cout << std::endl << g.get_number_variables() << std::endl;
-        /*std::pair<bool,SAT> test = backtracking(g);
+        std::pair<bool,SAT> test = backtracking(g);
         if (std::get<0>(test)) {
             std::cout << "JUHU!!!" << std::endl;
+            std::get<1>(test).print();
         }
         else {
             std::cout << "OH NO?" << std::endl;
-        }*/
+        }
     }
 
     return 0;
