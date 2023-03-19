@@ -37,9 +37,9 @@ SAT::SAT(char const* filename) {
     std::vector<std::tuple<int,bool,int>> clause;
     while (std::getline(file, line)) {
         std::stringstream ss(line);
-        while (ss) {
-            int temp;
-            ss >> temp;
+        int temp;
+        ss >> temp;
+        while (temp != 0) {
             if (temp < 0) {
                 const std::tuple<int,bool,int> Literal = std::make_tuple(-temp,false,0);
                 clause.push_back(Literal);
@@ -52,6 +52,7 @@ SAT::SAT(char const* filename) {
                 instanz.push_back(clause);
                 clause.clear();
             }
+            ss >> temp;
         }
     }
 }
@@ -61,6 +62,7 @@ void SAT::print() const{
         for (auto & tuple : clause) {
             std::cout << std::get<0>(tuple) << "," << std::get<2>(tuple) << " ; ";
         }
+        std::cout << std::endl;
     }
     std::cout << std::endl;
 }
@@ -99,7 +101,7 @@ u_long SAT::get_number_variables() const {
     return variables;
 }
 
-u_long SAT::get_numberclauses() const {
+u_long SAT::get_number_clauses() const {
     return clauses;
 }
 
@@ -109,12 +111,14 @@ bool SAT::check_if_still_satisfiable() const {
         for (auto & tuple : clause) {
             if (std::get<2>(tuple) != -1) {
                 satisfiable = true;
+                std::cout << "HALLO HALLO" << std::endl;
             }
         }
         if (not satisfiable) {
             return false;
         }
     }
+    return true;
 }
 
 void SAT::reset_variable(int variable) {

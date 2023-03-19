@@ -7,7 +7,7 @@
 #include <vector>
 #include <stack>
 
-void set_variable(int temp, SAT & instanz, std::vector<int> VariableState) {
+void set_variable(int temp, SAT & instanz, std::vector<int> & VariableState) {
     if (VariableState[temp-1] > 0) {
         VariableState[temp-1] = -1;
         instanz.set_variable(temp, false);
@@ -31,7 +31,7 @@ std::pair<bool,SAT> backtracking(SAT & instanz) {
     int temp = EachVariable.top();
     EachVariable.pop();
     BackTrack.push(temp);
-    set_variable(temp, instanz, VariableState[temp-1]);
+    set_variable(temp, instanz, VariableState);
     while (VariableState[0] != 0) {
         if (instanz.check_if_satisfied()) {
             return std::make_pair (true,instanz);
@@ -40,13 +40,17 @@ std::pair<bool,SAT> backtracking(SAT & instanz) {
             temp = EachVariable.top();
             EachVariable.pop();
             BackTrack.push(temp);
-            set_variable(temp, instanz, VariableState[temp-1]);
+            set_variable(temp, instanz, VariableState);
         }
         else {
+            std::cout << "GHJHGFGHJKHGFGHJK" << std::endl;
             EachVariable.push(temp);
             VariableState[temp-1] = 0;
             instanz.reset_variable(temp);
+            temp = BackTrack.top();
+            BackTrack.pop();
         }
     }
-
+    instanz.print();
+    return final;
 }

@@ -17,7 +17,7 @@ public:
     bool check_if_satisfied() const;
     bool check_if_still_satisfiable() const;
     u_long get_number_variables() const;
-    u_long get_numberclauses() const;
+    u_long get_number_clauses() const;
 private:
     std::vector<std::vector<std::tuple<int,bool,int>>> instanz;
      u_long variables;
