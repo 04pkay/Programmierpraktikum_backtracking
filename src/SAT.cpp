@@ -63,7 +63,12 @@ SAT::SAT(char const* filename) {
 void SAT::print() const{
     for (auto & clause : instanz) {
         for (auto & tuple : clause) {
-            std::cout << std::get<0>(tuple) << "," << std::get<2>(tuple) << " ; ";
+            if (std::get<1>(tuple)) {
+                std::cout << std::get<0>(tuple) << "," << std::get<2>(tuple) << " ; ";
+            }
+            else {
+                std::cout << -std::get<0>(tuple) << "," << std::get<2>(tuple) << " ; ";
+            }
         }
         std::cout << std::endl;
     }
