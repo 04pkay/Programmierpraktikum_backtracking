@@ -49,7 +49,7 @@ SAT::SAT(char const* filename) {
                 clause.push_back(Literal);
             }
             if (temp == 0) {        //here we are at the end of the clause and clear it for the next to come
-                instanz.push_back(clause);
+                instance.push_back(clause);
                 clause.clear();
             }
             ss >> temp;
@@ -58,7 +58,7 @@ SAT::SAT(char const* filename) {
 }
 
 void SAT::print() const{
-    for (auto & clause : instanz) {
+    for (auto & clause : instance) {
         for (auto & tuple : clause) {
             if (std::get<1>(tuple)) {
                 std::cout << std::get<0>(tuple) << "," << std::get<2>(tuple) << " ; ";
@@ -73,7 +73,7 @@ void SAT::print() const{
 }
 
 void SAT::set_variable(int variable, bool setting) {
-    for (auto & clause : instanz) {
+    for (auto & clause : instance) {
         for (auto & tuple : clause) {
             if (std::get<0>(tuple) == variable) {       //if we find a literal belonging to the variable..
                 if (std::get<1>(tuple) == setting) {    //..we check if we should set it to true..
@@ -88,7 +88,7 @@ void SAT::set_variable(int variable, bool setting) {
 }
 
 bool SAT::check_if_satisfied() const{
-    for (auto & clause : instanz) {
+    for (auto & clause : instance) {
         bool satisfied = false;
         for (auto & tuple : clause) {
             if (std::get<2>(tuple) == 1) {      //if we find a literal set on true, the clause is satisfied
@@ -96,22 +96,22 @@ bool SAT::check_if_satisfied() const{
             }
         }
         if (not satisfied) {
-            return false;       //if one clause is not satisfied, the whole instanz is not satisfied
+            return false;       //if one clause is not satisfied, the whole instance is not satisfied
         }
     }
     return true;
 }
 
-u_long SAT::get_number_variables() const {
+unsigned long SAT::get_number_variables() const {
     return variables;
 }
 
-u_long SAT::get_number_clauses() const {
+unsigned long SAT::get_number_clauses() const {
     return clauses;
 }
 
 bool SAT::check_if_still_satisfiable() const {
-    for (auto & clause : instanz) {
+    for (auto & clause : instance) {
         bool satisfiable = false;
         for (auto & tuple : clause) {
             if (std::get<2>(tuple) != -1) {     //if we find a literal not set on false, the clause can still be satisfied (or is satisfied already)
@@ -126,11 +126,11 @@ bool SAT::check_if_still_satisfiable() const {
 }
 
 void SAT::reset_variable(int variable) {
-    for (auto & clause : instanz) {
+    for (auto & clause : instance) {
         for (auto & tuple : clause) {
             if (std::get<0>(tuple) == variable) {
                 std::get<2>(tuple) = 0;
             }
         }
     }
-};
+}

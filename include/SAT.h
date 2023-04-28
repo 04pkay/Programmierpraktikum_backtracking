@@ -16,12 +16,12 @@ public:
     void reset_variable(int variable);
     bool check_if_satisfied() const;
     bool check_if_still_satisfiable() const;
-    u_long get_number_variables() const;
-    u_long get_number_clauses() const;
+    unsigned long get_number_variables() const;
+    unsigned long get_number_clauses() const;
 private:
-    std::vector<std::vector<std::tuple<int,bool,int>>> instanz;
-     u_long variables;
-     u_long clauses;
+    std::vector<std::vector<std::tuple<int,bool,int>>> instance;
+     unsigned long variables;
+     unsigned long clauses;
 };
 
 #endif //PROGRAMMIERPRAKTIKUM_SAT_H
