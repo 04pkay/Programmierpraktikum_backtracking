@@ -134,3 +134,29 @@ void SAT::reset_variable(int variable) {
         }
     }
 }
+
+/*std::vector<std::pair<int,int>> SAT::variable_scan() {
+    std::vector<std::vector<std::pair<int,int>>> VariableLocations(int(get_number_variables()), std::vector<std::pair<int,int>>);
+    int current_clause = 0;
+    int current_tuple = 0;
+    for (auto & clause : instance) {
+        for (auto & tuple : clause) {
+            VariableLocations
+        }
+        current_clause += 1;
+        current_tuple = 0;
+    }
+}*/
+void SAT::delete_clause(int clause) {
+    clauses -= 1;
+    instance.erase(instance.begin() +clause-1);
+}
+
+void SAT::delete_literal(int clause, int variable) {
+    auto NoMoreLiteral = std::remove_if(begin(instance[clause-1]), end(instance[clause-1]),[variable](std::tuple<int,bool,int> tuple) { return (std::get<0>(tuple) == variable);});
+    instance[clause-1].erase(NoMoreLiteral,instance[clause-1].end());
+}
+
+std::vector<std::vector<std::tuple<int, bool, int>>> SAT::get_clauses() {
+    return instance;
+}

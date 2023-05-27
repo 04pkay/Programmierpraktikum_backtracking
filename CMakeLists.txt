@@ -4,4 +4,4 @@ project(Programmierpraktikum)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(Programmierpraktikum src/main.cpp include/SAT.h src/SAT.cpp src/backtracking.cpp include/backtracking.h)
+add_executable(Programmierpraktikum src/main.cpp include/SAT.h src/SAT.cpp src/backtracking.cpp include/backtracking.h include/ASAT.h src/ASAT.cpp)

@@ -5,27 +5,23 @@
 #include "../include/SAT.h"
 #include <vector>
 
-enum class VariableAssignment : int {assigned_false = -1, unassigned = 0, assigned_true = 1};
+
 
 bool backtracking_recursion(int current_variable, SAT & instance) {
     instance.set_variable(current_variable, true);
     if (instance.check_if_satisfied()) {
         return true;
     }
-    if (instance.check_if_still_satisfiable()) {     //if the instance is still satisfiable, we can set the next variable
-        if (backtracking_recursion(current_variable + 1, instance)) {
-            return true;
-        }
+    if (instance.check_if_still_satisfiable() and backtracking_recursion(current_variable + 1, instance)) {     //if the instance is still satisfiable, we can set the next variable
+        return true;
     }
 
     instance.set_variable(current_variable, false);      //we came back because we made a mistake, maybe it will work with the variable set to false
     if (instance.check_if_satisfied()) {
         return true;
     }
-    if (instance.check_if_still_satisfiable()) {         //if the instance is still satisfiable, we can set the next variable
-        if (backtracking_recursion(current_variable + 1, instance)) {
-            return true;
-        }
+    if (instance.check_if_still_satisfiable() and backtracking_recursion(current_variable + 1, instance)) {         //if the instance is still satisfiable, we can set the next variable
+        return true;
     }
 
     instance.reset_variable(current_variable);       //this variable was not the mistake, we need to backtrack some more
@@ -41,6 +37,8 @@ std::pair<bool,SAT> backtracking(SAT & instance) {
         return std::make_pair (false,instance);
     }
 }
+
+enum class VariableAssignment : int {assigned_false = -1, unassigned = 0, assigned_true = 1};
 
 bool backtracking_non_recursive(SAT & instance) {
     std::vector<VariableAssignment> VariableState(int(instance.get_number_variables()), VariableAssignment::unassigned);     //VariableState[i] := variable i+1 is not set (0), set to true (1), or false (-1)
