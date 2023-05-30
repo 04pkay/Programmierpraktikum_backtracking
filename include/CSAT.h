@@ -1,0 +1,8 @@
+//
+// Created by Pascal Kessler on 30.05.23.
+//
+
+#ifndef PROGRAMMIERPRAKTIKUM_CSAT_H
+#define PROGRAMMIERPRAKTIKUM_CSAT_H
+
+#endif //PROGRAMMIERPRAKTIKUM_CSAT_H

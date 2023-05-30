@@ -70,6 +70,12 @@ build CMakeFiles/Programmierpraktikum.dir/src/ASAT.cpp.o: CXX_COMPILER__Programm
   OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
   OBJECT_FILE_DIR = CMakeFiles/Programmierpraktikum.dir/src
 
+build CMakeFiles/Programmierpraktikum.dir/src/CSAT.cpp.o: CXX_COMPILER__Programmierpraktikum_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/CSAT.cpp || cmake_object_order_depends_target_Programmierpraktikum
+  DEP_FILE = CMakeFiles/Programmierpraktikum.dir/src/CSAT.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
+  OBJECT_FILE_DIR = CMakeFiles/Programmierpraktikum.dir/src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target Programmierpraktikum
@@ -78,7 +84,7 @@ build CMakeFiles/Programmierpraktikum.dir/src/ASAT.cpp.o: CXX_COMPILER__Programm
 #############################################
 # Link the executable Programmierpraktikum
 
-build Programmierpraktikum: CXX_EXECUTABLE_LINKER__Programmierpraktikum_Debug CMakeFiles/Programmierpraktikum.dir/src/main.cpp.o CMakeFiles/Programmierpraktikum.dir/src/SAT.cpp.o CMakeFiles/Programmierpraktikum.dir/src/backtracking.cpp.o CMakeFiles/Programmierpraktikum.dir/src/ASAT.cpp.o
+build Programmierpraktikum: CXX_EXECUTABLE_LINKER__Programmierpraktikum_Debug CMakeFiles/Programmierpraktikum.dir/src/main.cpp.o CMakeFiles/Programmierpraktikum.dir/src/SAT.cpp.o CMakeFiles/Programmierpraktikum.dir/src/backtracking.cpp.o CMakeFiles/Programmierpraktikum.dir/src/ASAT.cpp.o CMakeFiles/Programmierpraktikum.dir/src/CSAT.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0
   OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
   POST_BUILD = :
