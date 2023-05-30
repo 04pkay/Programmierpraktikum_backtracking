@@ -5,6 +5,7 @@
 #include "../include/SAT.h"
 #include <vector>
 #include <cmath>
+#include <queue>
 
 std::pair<int,bool> choose_variable(SAT & instance) {
     std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair<double,double>(0,0));
@@ -102,4 +103,69 @@ std::pair<int,bool> choose_variable(SAT & instance) {
         }
     }
     return std::make_pair(ChosenVariable,MoreNormalLiterals);
+}
+
+bool unit_propagation(SAT & instance) {
+    SAT ClonedInstance = instance;
+    int VariableFix;
+    for (auto & clausefix : ClonedInstance.get_clauses()) {
+        if (clausefix.size() == 1) {
+            for (int clause = 0; clause < ClonedInstance.get_clauses().size(); clause++) {
+                if (ClonedInstance.get_clauses()[clause].size() == 1) {
+                    if (std::get<1>(ClonedInstance.get_clauses()[clause][0]) != std::get<1>(clausefix[0])) {
+                        return false;
+                    }
+                    else {
+                        ClonedInstance.delete_clause(clause);
+                    }
+                }
+                else {
+                    bool satisfied = false;
+                    bool occurred = false;
+                    for (int tuple = 0; tuple < ClonedInstance.get_clauses()[clause].size(); tuple++) {
+                        if (std::get<0>(ClonedInstance.get_clauses()[clause][tuple]) == std::get<0>(clausefix[0])) {
+                            occurred = true;
+                            if (!std::get<1>(ClonedInstance.get_clauses()[clause][tuple])) {
+                                satisfied = true;
+                            }
+                        }
+                    }
+                    if (occurred and satisfied) {
+                        ClonedInstance.delete_clause(clause);
+                    }
+                    else if (occurred) {
+                        ClonedInstance.delete_literal(clause, std::get<0>(clausefix[0]));
+                    }
+                }
+            }
+        }
+    }
+    instance = ClonedInstance;
+    return true;
+}
+
+
+
+void local_processing(std::vector<int> & SortedVariables, SAT instance) {
+    //std::queue<SAT> SimplerInstances;
+    for(int variable = 0; variable < 0.05 * instance.get_number_variables(); variable++) {
+        for (int clause = 0; clause < instance.get_clauses().size(); clause++) {
+            bool satisfied = false;
+            bool occurred = false;
+            for (int tuple = 0; tuple < instance.get_clauses()[clause].size(); tuple++) {
+                if (std::get<0>(instance.get_clauses()[clause][tuple]) == variable) {
+                    occurred = true;
+                    if (!std::get<1>(instance.get_clauses()[clause][tuple])) {
+                        satisfied = true;
+                    }
+                }
+            }
+            if (occurred and satisfied) {
+                instance.delete_clause(clause);
+            }
+            else if (occurred) {
+                instance.delete_literal(clause, variable);
+            }
+        }
+    }
 }
