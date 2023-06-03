@@ -149,7 +149,7 @@ void SAT::reset_variable(int variable) {
 }*/
 void SAT::delete_clause(int clause) {
     clauses -= 1;
-    instance.erase(instance.begin() +clause-1);
+    instance.erase(instance.begin() +clause);
 }
 
 void SAT::delete_literal(int clause, int variable) {

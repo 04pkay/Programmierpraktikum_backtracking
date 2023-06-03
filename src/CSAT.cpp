@@ -169,3 +169,7 @@ void local_processing(std::vector<int> & SortedVariables, SAT instance) {
         }
     }
 }
+
+bool c_sat(SAT instance) {
+
+}
