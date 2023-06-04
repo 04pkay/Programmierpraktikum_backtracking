@@ -84,28 +84,90 @@ std::pair<int,bool> choose_variable(SAT & instance) {
         }
     }
 
-    int ChosenVariable;
-    bool MoreNormalLiterals;
-    double Maximum = 0;
-    double CompareValue;
+    int chosen_variable = -1;
+    double maximum_value = 0;
     for (int variable = 0; variable < VariableOccurrences.size(); variable++) {
-        if (VariableOccurrences[variable].first < VariableOccurrences[variable].second) {
-           CompareValue = VariableOccurrences[variable].first + VariableOccurrences[variable].second + (1.5 * VariableOccurrences[variable].first);
-           MoreNormalLiterals = false;
-        }
-        else {
-            CompareValue = VariableOccurrences[variable].first + VariableOccurrences[variable].second + (1.5 * VariableOccurrences[variable].second);
-            MoreNormalLiterals = true;
-        }
-        if (CompareValue > Maximum) {
-            Maximum = CompareValue;
-            ChosenVariable = variable+1;
+        double const current_value = VariableOccurrences[variable].first + VariableOccurrences[variable].second + 1.5 * std::min(VariableOccurrences[variable].first, VariableOccurrences[variable].second);
+        if (current_value > maximum_value) {
+            chosen_variable = variable;
+            maximum_value = current_value;
         }
     }
-    return std::make_pair(ChosenVariable,MoreNormalLiterals);
+    return std::make_pair(chosen_variable, VariableOccurrences[chosen_variable].first >= VariableOccurrences[chosen_variable].second);
 }
 
 bool unit_propagation(SAT & instance) {
+    SAT ClonedInstance = instance;
+    bool found_variable_fix = true;
+    while (found_variable_fix) {
+        found_variable_fix = false;
+        for (auto & clause : ClonedInstance.get_clauses()) {
+            if (clause.size() == 1) {
+                found_variable_fix = true;
+                ClonedInstance.set_variable(std::get<0>(clause[0]),std::get<1>(clause[0]));
+            }
+        }
+        auto clause_iterator = ClonedInstance.get_clauses().begin(); //zeigt der iterator hier auf die clauses von der instanz oder zeigt der jetzt ins nichts?
+        while (clause_iterator != ClonedInstance.get_clauses().begin()) {
+            auto literal_iterator = clause_iterator->begin();
+            while (literal_iterator != clause_iterator->end()) {
+                if (std::get<2>(*literal_iterator) == 1) {
+                    clause_iterator = ClonedInstance.get_clauses().erase(clause_iterator);
+                    literal_iterator = clause_iterator->begin();
+                }
+                else if (std::get<2>(*literal_iterator) == -1) {
+                    literal_iterator = clause_iterator->erase(literal_iterator);
+                }
+                else {
+                    ++ literal_iterator;
+                }
+            }
+            if (clause_iterator->empty()) {
+                return false;
+            }
+            else {
+                ++ clause_iterator;
+            }
+        }
+
+    }
+    instance = ClonedInstance;
+    return true;
+}
+
+
+
+void local_processing(std::vector<int> & SortedVariables, SAT & instance) {
+    //std::queue<SAT> SimplerInstances;
+    for(int variable = 0; variable < 0.05 * instance.get_number_variables(); variable++) {
+        for (int clause = 0; clause < instance.get_clauses().size(); clause++) {
+            bool satisfied = false;
+            bool occurred = false;
+            for (int tuple = 0; tuple < instance.get_clauses()[clause].size(); tuple++) {
+                if (std::get<0>(instance.get_clauses()[clause][tuple]) == variable) {
+                    occurred = true;
+                    if (!std::get<1>(instance.get_clauses()[clause][tuple])) {
+                        satisfied = true;
+                    }
+                }
+            }
+            if (occurred and satisfied) {
+                instance.delete_clause(clause);
+            }
+            else if (occurred) {
+                instance.delete_literal(clause, variable);
+            }
+        }
+    }
+}
+
+bool c_sat(SAT instance) {
+
+}
+
+
+/*
+  bool unit_propagation(SAT & instance) {
     SAT ClonedInstance = instance;
     int VariableFix;
     for (auto & clausefix : ClonedInstance.get_clauses()) {
@@ -143,33 +205,4 @@ bool unit_propagation(SAT & instance) {
     instance = ClonedInstance;
     return true;
 }
-
-
-
-void local_processing(std::vector<int> & SortedVariables, SAT instance) {
-    //std::queue<SAT> SimplerInstances;
-    for(int variable = 0; variable < 0.05 * instance.get_number_variables(); variable++) {
-        for (int clause = 0; clause < instance.get_clauses().size(); clause++) {
-            bool satisfied = false;
-            bool occurred = false;
-            for (int tuple = 0; tuple < instance.get_clauses()[clause].size(); tuple++) {
-                if (std::get<0>(instance.get_clauses()[clause][tuple]) == variable) {
-                    occurred = true;
-                    if (!std::get<1>(instance.get_clauses()[clause][tuple])) {
-                        satisfied = true;
-                    }
-                }
-            }
-            if (occurred and satisfied) {
-                instance.delete_clause(clause);
-            }
-            else if (occurred) {
-                instance.delete_literal(clause, variable);
-            }
-        }
-    }
-}
-
-bool c_sat(SAT instance) {
-
-}
+ */
