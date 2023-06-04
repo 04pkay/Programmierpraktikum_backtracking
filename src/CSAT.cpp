@@ -135,30 +135,65 @@ bool unit_propagation(SAT & instance) {
     return true;
 }
 
+enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1};
 
-
-void local_processing(std::vector<int> & SortedVariables, SAT & instance) {
-    //std::queue<SAT> SimplerInstances;
-    for(int variable = 0; variable < 0.05 * instance.get_number_variables(); variable++) {
-        for (int clause = 0; clause < instance.get_clauses().size(); clause++) {
+LocalProcessing local_processing(std::vector<int> & SortedVariables, SAT & instance) {
+    for (int variable = 0; variable < 0.05*SortedVariables.size(); variable++) {
+        SAT PositiveClonedInstance = instance;
+        SAT NegativeClonedInstance = instance;
+        for (int clause = 0; clause < NegativeClonedInstance.get_clauses().size(); clause++) {  //we set the variable to false
             bool satisfied = false;
             bool occurred = false;
-            for (int tuple = 0; tuple < instance.get_clauses()[clause].size(); tuple++) {
-                if (std::get<0>(instance.get_clauses()[clause][tuple]) == variable) {
+            for (int tuple = 0; tuple < NegativeClonedInstance.get_clauses()[clause].size(); tuple++) {
+                if (std::get<0>(NegativeClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable]) {
+                    occurred = true;    //the variable occurs in this clause..
+                    if (not std::get<1>(NegativeClonedInstance.get_clauses()[clause][tuple])) {
+                        satisfied = true;    //..and also satisfies the clause
+                    }
+                }
+            }
+            if (occurred and satisfied) {
+                NegativeClonedInstance.delete_clause(clause);
+                clause -= 1;
+            }
+            else if (occurred) {
+                NegativeClonedInstance.delete_literal(clause, SortedVariables[variable]);
+            }
+        }
+        for (int clause = 0; clause < PositiveClonedInstance.get_clauses().size(); clause++) {    //same but set variable to true
+            bool satisfied = false;
+            bool occurred = false;
+            for (int tuple = 0; tuple < PositiveClonedInstance.get_clauses()[clause].size(); tuple++) {
+                if (std::get<0>(PositiveClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable]) {
                     occurred = true;
-                    if (!std::get<1>(instance.get_clauses()[clause][tuple])) {
+                    if (std::get<1>(PositiveClonedInstance.get_clauses()[clause][tuple])) {
                         satisfied = true;
                     }
                 }
             }
             if (occurred and satisfied) {
-                instance.delete_clause(clause);
+                PositiveClonedInstance.delete_clause(clause);
+                clause -= 1;
             }
             else if (occurred) {
-                instance.delete_literal(clause, variable);
+                PositiveClonedInstance.delete_literal(clause, SortedVariables[variable]);
             }
         }
+        bool result_negative_clone = unit_propagation(NegativeClonedInstance);  //remark: This may simplify the cloned instances
+        bool result_positive_clone = unit_propagation(PositiveClonedInstance);
+        if (!result_negative_clone and !result_positive_clone) {
+            return LocalProcessing::backtrack;
+        }
+        else if (result_negative_clone and !result_positive_clone) {
+            instance = NegativeClonedInstance;
+            return LocalProcessing::simplified;
+        }
+        else if (!result_negative_clone and result_positive_clone) {
+            instance = PositiveClonedInstance;
+            return LocalProcessing::simplified;
+        }
     }
+    return LocalProcessing::not_simplified;
 }
 
 bool c_sat(SAT instance) {
