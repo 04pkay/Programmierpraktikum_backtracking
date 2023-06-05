@@ -107,7 +107,7 @@ bool unit_propagation(SAT & instance) {
                 ClonedInstance.set_variable(std::get<0>(clause[0]),std::get<1>(clause[0]));
             }
         }
-        auto clause_iterator = ClonedInstance.get_clauses().begin(); //zeigt der iterator hier auf die clauses von der instanz oder zeigt der jetzt ins nichts?
+        auto clause_iterator = ClonedInstance.get_clause_iterator();
         while (clause_iterator != ClonedInstance.get_clauses().begin()) {
             auto literal_iterator = clause_iterator->begin();
             while (literal_iterator != clause_iterator->end()) {
@@ -137,7 +137,9 @@ bool unit_propagation(SAT & instance) {
 
 enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1};
 
-LocalProcessing local_processing(std::vector<int> & SortedVariables, SAT & instance) {
+LocalProcessing local_processing(SAT & instance) {
+    std::vector<int> SortedVariables;
+    //hier muss noch gerechnet werden
     for (int variable = 0; variable < 0.05*SortedVariables.size(); variable++) {
         SAT PositiveClonedInstance = instance;
         SAT NegativeClonedInstance = instance;
@@ -196,8 +198,45 @@ LocalProcessing local_processing(std::vector<int> & SortedVariables, SAT & insta
     return LocalProcessing::not_simplified;
 }
 
-bool c_sat(SAT instance) {
+bool c_sat(SAT & instance) {
+    std::queue<SAT> DifferentPaths; //here we store the instances, where we put the selected variable to false instead of true
+    DifferentPaths.push(instance);
+    bool tried_local_processing = false;
+    while (not DifferentPaths.empty()) {
+        SAT current_instance = DifferentPaths.front();
+        if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
+            return true;
+        }
+        else if (std::any_of(begin(current_instance.get_clauses()), end(current_instance.get_clauses()),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+            DifferentPaths.pop();   //instance not satisfiable anymore, we found a clause which can not be satisfied anymore
+        }
 
+        if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) {
+            tried_local_processing = false;
+            std::pair chosen_variable = choose_variable(current_instance);
+            if (std::get<1>(chosen_variable)) {
+                SAT cloned_instance = current_instance;
+                cloned_instance.set_variable_false(std::get<0>(chosen_variable));
+                DifferentPaths.push(cloned_instance);
+                current_instance.set_variable_true(std::get<0>(chosen_variable));
+            }
+            else {
+                SAT cloned_instance = current_instance;
+                cloned_instance.set_variable_true(std::get<0>(chosen_variable));
+                DifferentPaths.push(cloned_instance);
+                current_instance.set_variable_false(std::get<0>(chosen_variable));
+            }
+        }
+        else {
+            LocalProcessing result_local_processing = local_processing(current_instance);
+            if (result_local_processing == LocalProcessing::backtrack) {
+                DifferentPaths.pop();
+            }
+            else if (result_local_processing == LocalProcessing::not_simplified) {
+                tried_local_processing = true;
+            }
+        }
+    }
 }
 
 

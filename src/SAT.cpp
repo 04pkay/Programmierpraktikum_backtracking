@@ -73,6 +73,7 @@ void SAT::print() const{
 }
 
 void SAT::set_variable(int variable, bool setting) {
+    num_assigned_variables += 1;
     for (auto & clause : instance) {
         for (auto & tuple : clause) {
             if (std::get<0>(tuple) == variable) {       //if we find a literal belonging to the variable..
@@ -126,6 +127,7 @@ bool SAT::check_if_still_satisfiable() const {
 }
 
 void SAT::reset_variable(int variable) {
+    num_assigned_variables -= 1;
     for (auto & clause : instance) {
         for (auto & tuple : clause) {
             if (std::get<0>(tuple) == variable) {
@@ -159,4 +161,58 @@ void SAT::delete_literal(int clause, int variable) {
 
 std::vector<std::vector<std::tuple<int, bool, int>>> SAT::get_clauses() {
     return instance;
+}
+
+void SAT::set_variable_false(int variable) {
+    num_assigned_variables += 1;
+    for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to false
+        bool satisfied = false;
+        bool occurred = false;
+        for (int tuple = 0; tuple < instance[clause].size(); tuple++) {
+            if (std::get<0>(instance[clause][tuple]) == variable) {
+                occurred = true;    //the variable occurs in this clause..
+                if (not std::get<1>(instance[clause][tuple])) {
+                    satisfied = true;    //..and also satisfies the clause
+                }
+            }
+        }
+        if (occurred and satisfied) {
+            delete_clause(clause);
+            clause -= 1;
+        }
+        else if (occurred) {
+            delete_literal(clause, variable);
+        }
+    }
+}
+
+void SAT::set_variable_true(int variable) {
+    num_assigned_variables += 1;
+    for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to true
+        bool satisfied = false;
+        bool occurred = false;
+        for (int tuple = 0; tuple < instance[clause].size(); tuple++) {
+            if (std::get<0>(instance[clause][tuple]) == variable) {
+                occurred = true;    //the variable occurs in this clause..
+                if (std::get<1>(instance[clause][tuple])) {
+                    satisfied = true;    //..and also satisfies the clause
+                }
+            }
+        }
+        if (occurred and satisfied) {
+            delete_clause(clause);
+            clause -= 1;
+        }
+        else if (occurred) {
+            delete_literal(clause, variable);
+        }
+    }
+}
+
+std::vector<std::vector<std::tuple<int,bool,int>>>::iterator SAT::get_clause_iterator() {
+    return instance.begin();
+}
+
+unsigned long SAT::get_number_assigned_variables() const {
+    return num_assigned_variables;
 }
