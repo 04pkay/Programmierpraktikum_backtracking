@@ -7,22 +7,19 @@
 #include <cmath>
 #include <queue>
 
-std::pair<int,bool> choose_variable(SAT & instance) {
+std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair<double,double>(0,0));
     std::vector<std::vector<std::tuple<int,bool,int>>*> ClausesLenTwo;
     for (auto & clause : instance.get_clauses()) {
         if (clause.size() == 2) {
             ClausesLenTwo.push_back(&clause);
         }
-        double SizeFactor = -log(1-1/pow((pow(2, clause.size()) -1),2));
         for (auto & tuple : clause) {
-            if (std::get<2>(tuple) == 0) {
-                if (std::get<1>(tuple)) {
-                    VariableOccurrences[std::get<0>(tuple)-1].first += SizeFactor;
-                }
-                else {
-                    VariableOccurrences[std::get<0>(tuple)-1].second += SizeFactor;
-                }
+            if (std::get<1>(tuple)) {
+                VariableOccurrences[std::get<0>(tuple)-1].first += SizeFactor[clause.size()];
+            }
+            else {
+                VariableOccurrences[std::get<0>(tuple)-1].second += SizeFactor[clause.size()];
             }
         }
     }
@@ -32,52 +29,48 @@ std::pair<int,bool> choose_variable(SAT & instance) {
         std::tuple<int,bool,int> Second = std::make_tuple(std::get<0>((*clausefix)[1]),!std::get<1>((*clausefix)[1]),0);
         if (std::get<1>(First) and std::get<1>(Second)) { //both variables negated
             for (auto & clause : instance.get_clauses()) {
-                double SizeFactor = -log(1 - 1 / pow((pow(2, clause.size()) - 1), 2));
                 for (auto &tuple: clause) {
                     if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].second += SizeFactor;
+                        VariableOccurrences[std::get<0>(Second) - 1].second += SizeFactor[clause.size()];
                     }
                     if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].second += SizeFactor;
+                        VariableOccurrences[std::get<0>(First) - 1].second += SizeFactor[clause.size()];
                     }
                 }
             }
         }
         else if (!std::get<1>(First) and std::get<1>(Second)) { //only second variable negated
             for (auto & clause : instance.get_clauses()) {
-                double SizeFactor = -log(1 - 1 / pow((pow(2, clause.size()) - 1), 2));
                 for (auto &tuple: clause) {
                     if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].second += SizeFactor;
+                        VariableOccurrences[std::get<0>(Second) - 1].second += SizeFactor[clause.size()];
                     }
                     if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].first += SizeFactor;
+                        VariableOccurrences[std::get<0>(First) - 1].first += SizeFactor[clause.size()];
                     }
                 }
             }
         }
         else if (std::get<1>(First) and !std::get<1>(Second)) { //only first variable negated
             for (auto & clause : instance.get_clauses()) {
-                double SizeFactor = -log(1 - 1 / pow((pow(2, clause.size()) - 1), 2));
                 for (auto &tuple: clause) {
                     if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].first += SizeFactor;
+                        VariableOccurrences[std::get<0>(Second) - 1].first += SizeFactor[clause.size()];
                     }
                     if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].second += SizeFactor;
+                        VariableOccurrences[std::get<0>(First) - 1].second += SizeFactor[clause.size()];
                     }
                 }
             }
         }
         else { //both normal
             for (auto & clause : instance.get_clauses()) {
-                double SizeFactor = -log(1 - 1 / pow((pow(2, clause.size()) - 1), 2));
                 for (auto &tuple: clause) {
                     if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].first += SizeFactor;
+                        VariableOccurrences[std::get<0>(Second) - 1].first += SizeFactor[clause.size()];
                     }
                     if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].first += SizeFactor;
+                        VariableOccurrences[std::get<0>(First) - 1].first += SizeFactor[clause.size()];
                     }
                 }
             }
@@ -142,18 +135,17 @@ bool unit_propagation(SAT & instance) {
 
 enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1};
 
-LocalProcessing local_processing(SAT & instance) {
+LocalProcessing local_processing(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<int,double>> SortedVariables;
     for(int variable = 1; variable <= instance.get_number_variables(); variable++) {
         SortedVariables.push_back(std::make_pair(variable,0));
     }
     for (auto & clause : instance.get_clauses()) {
-        double SizeFactor = -log(1-1/pow((pow(2, clause.size()) -1),2));
         for (auto & tuple : clause) {
-            SortedVariables[std::get<0>(tuple)-1].second += SizeFactor;
+            SortedVariables[std::get<0>(tuple)-1].second += SizeFactor[clause.size()];
         }
     }
-    std::sort(SortedVariables.begin(), SortedVariables.end(), [] (std::pair<int,double> a, std::pair<int,double> b) {return a.second < b.second;});
+    std::sort(SortedVariables.begin(), SortedVariables.end(), [] (const std::pair<int,double> & a, const std::pair<int,double> & b) {return a.second < b.second;});
     for (int variable = 0; variable < 0.05*SortedVariables.size(); variable++) {
         SAT PositiveClonedInstance = instance;
         SAT NegativeClonedInstance = instance;
@@ -204,7 +196,7 @@ LocalProcessing local_processing(SAT & instance) {
             instance = NegativeClonedInstance;
             return LocalProcessing::simplified;
         }
-        else if (!result_negative_clone and result_positive_clone) {
+        else if (!result_negative_clone and result_positive_clone) {    //hier sagt er mir die Bedingung wäre immer erfüllt, falls wir hier hin kommen??
             instance = PositiveClonedInstance;
             return LocalProcessing::simplified;
         }
@@ -213,6 +205,11 @@ LocalProcessing local_processing(SAT & instance) {
 }
 
 bool c_sat(SAT & instance) {
+    int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<std::tuple<int,bool,int>> & a, const std::vector<std::tuple<int,bool,int>> & b) {return a.size() < b.size();})).size(); //ich wollte es mit std::max machen, hab es aber nicht hinbekommen
+    std::vector<const double> SizeFactor {0};
+    for (int size = 1; size <= size_of_biggest_clause; size++) {
+        SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
+    }
     std::queue<SAT> DifferentPaths; //here we store the instances, where we put the selected variable to false instead of true
     DifferentPaths.push(instance);
     bool tried_local_processing = false;
@@ -227,7 +224,7 @@ bool c_sat(SAT & instance) {
 
         if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) {
             tried_local_processing = false;
-            std::pair chosen_variable = choose_variable(current_instance);
+            std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
             if (std::get<1>(chosen_variable)) {
                 SAT cloned_instance = current_instance;
                 cloned_instance.set_variable_false(std::get<0>(chosen_variable));
@@ -242,7 +239,7 @@ bool c_sat(SAT & instance) {
             }
         }
         else {
-            LocalProcessing result_local_processing = local_processing(current_instance);
+            LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
             if (result_local_processing == LocalProcessing::backtrack) {
                 DifferentPaths.pop();
             }
@@ -251,6 +248,7 @@ bool c_sat(SAT & instance) {
             }
         }
     }
+    return false;
 }
 
 
