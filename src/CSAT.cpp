@@ -104,7 +104,12 @@ bool unit_propagation(SAT & instance) {
         for (auto & clause : ClonedInstance.get_clauses()) {
             if (clause.size() == 1) {
                 found_variable_fix = true;
-                ClonedInstance.set_variable(std::get<0>(clause[0]),std::get<1>(clause[0]));
+                if (std::get<2>(clause[0]) == 0) {
+                    ClonedInstance.set_variable(std::get<0>(clause[0]), std::get<1>(clause[0]));
+                }
+                else {
+                    return false;
+                }
             }
         }
         auto clause_iterator = ClonedInstance.get_clause_iterator();
@@ -138,8 +143,17 @@ bool unit_propagation(SAT & instance) {
 enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1};
 
 LocalProcessing local_processing(SAT & instance) {
-    std::vector<int> SortedVariables;
-    //hier muss noch gerechnet werden
+    std::vector<std::pair<int,double>> SortedVariables;
+    for(int variable = 1; variable <= instance.get_number_variables(); variable++) {
+        SortedVariables.push_back(std::make_pair(variable,0));
+    }
+    for (auto & clause : instance.get_clauses()) {
+        double SizeFactor = -log(1-1/pow((pow(2, clause.size()) -1),2));
+        for (auto & tuple : clause) {
+            SortedVariables[std::get<0>(tuple)-1].second += SizeFactor;
+        }
+    }
+    std::sort(SortedVariables.begin(), SortedVariables.end(), [] (std::pair<int,double> a, std::pair<int,double> b) {return a.second < b.second;});
     for (int variable = 0; variable < 0.05*SortedVariables.size(); variable++) {
         SAT PositiveClonedInstance = instance;
         SAT NegativeClonedInstance = instance;
@@ -147,7 +161,7 @@ LocalProcessing local_processing(SAT & instance) {
             bool satisfied = false;
             bool occurred = false;
             for (int tuple = 0; tuple < NegativeClonedInstance.get_clauses()[clause].size(); tuple++) {
-                if (std::get<0>(NegativeClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable]) {
+                if (std::get<0>(NegativeClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable].first) {
                     occurred = true;    //the variable occurs in this clause..
                     if (not std::get<1>(NegativeClonedInstance.get_clauses()[clause][tuple])) {
                         satisfied = true;    //..and also satisfies the clause
@@ -159,14 +173,14 @@ LocalProcessing local_processing(SAT & instance) {
                 clause -= 1;
             }
             else if (occurred) {
-                NegativeClonedInstance.delete_literal(clause, SortedVariables[variable]);
+                NegativeClonedInstance.delete_literal(clause, SortedVariables[variable].first);
             }
         }
         for (int clause = 0; clause < PositiveClonedInstance.get_clauses().size(); clause++) {    //same but set variable to true
             bool satisfied = false;
             bool occurred = false;
             for (int tuple = 0; tuple < PositiveClonedInstance.get_clauses()[clause].size(); tuple++) {
-                if (std::get<0>(PositiveClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable]) {
+                if (std::get<0>(PositiveClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable].first) {
                     occurred = true;
                     if (std::get<1>(PositiveClonedInstance.get_clauses()[clause][tuple])) {
                         satisfied = true;
@@ -178,7 +192,7 @@ LocalProcessing local_processing(SAT & instance) {
                 clause -= 1;
             }
             else if (occurred) {
-                PositiveClonedInstance.delete_literal(clause, SortedVariables[variable]);
+                PositiveClonedInstance.delete_literal(clause, SortedVariables[variable].first);
             }
         }
         bool result_negative_clone = unit_propagation(NegativeClonedInstance);  //remark: This may simplify the cloned instances
