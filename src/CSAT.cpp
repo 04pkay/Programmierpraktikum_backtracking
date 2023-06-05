@@ -15,10 +15,10 @@ std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const doub
             ClausesLenTwo.push_back(&clause);
         }
         for (auto & tuple : clause) {
-            if (std::get<1>(tuple)) {
+            if (std::get<1>(tuple)) {   //positive occurrence
                 VariableOccurrences[std::get<0>(tuple)-1].first += SizeFactor[clause.size()];
             }
-            else {
+            else {  //negative occurrence
                 VariableOccurrences[std::get<0>(tuple)-1].second += SizeFactor[clause.size()];
             }
         }
@@ -63,7 +63,7 @@ std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const doub
                 }
             }
         }
-        else { //both normal
+        else { //both positive
             for (auto & clause : instance.get_clauses()) {
                 for (auto &tuple: clause) {
                     if (tuple == First) {
@@ -79,48 +79,48 @@ std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const doub
 
     int chosen_variable = -1;
     double maximum_value = 0;
-    for (int variable = 0; variable < VariableOccurrences.size(); variable++) {
+    for (int variable = 0; variable < VariableOccurrences.size(); variable++) { //we want select the variable with the most weight
         double const current_value = VariableOccurrences[variable].first + VariableOccurrences[variable].second + 1.5 * std::min(VariableOccurrences[variable].first, VariableOccurrences[variable].second);
         if (current_value > maximum_value) {
             chosen_variable = variable;
             maximum_value = current_value;
         }
     }
-    return std::make_pair(chosen_variable, VariableOccurrences[chosen_variable].first >= VariableOccurrences[chosen_variable].second);
+    return std::make_pair(chosen_variable, VariableOccurrences[chosen_variable].first >= VariableOccurrences[chosen_variable].second);  //we return the chosen variable and if there are more/equal positive occurrences than negative ones
 }
 
 bool unit_propagation(SAT & instance) {
     SAT ClonedInstance = instance;
     bool found_variable_fix = true;
-    while (found_variable_fix) {
+    while (found_variable_fix) {    //we want to stop after one iteration without change
         found_variable_fix = false;
         for (auto & clause : ClonedInstance.get_clauses()) {
             if (clause.size() == 1) {
                 found_variable_fix = true;
-                if (std::get<2>(clause[0]) == 0) {
+                if (std::get<2>(clause[0]) == 0) {  //if not yet set we set the variable such that it satisfies the clause
                     ClonedInstance.set_variable(std::get<0>(clause[0]), std::get<1>(clause[0]));
                 }
-                else {
+                else if (std::get<2>(clause[0]) == -1) {    //this is a contradiction, the clause is not satisfiable anymore
                     return false;
                 }
             }
         }
-        auto clause_iterator = ClonedInstance.get_clause_iterator();
+        auto clause_iterator = ClonedInstance.get_clause_iterator();    //hier hatte ich vorher ClonedInstance.get_clause().begin(), da hat clang_tidy gemeckert, ich bin mir aber nicht sicher gewesen ob der iterator am ende ins nichts gezeigt hätte oder ob das auch klappen würde
         while (clause_iterator != ClonedInstance.get_clauses().begin()) {
             auto literal_iterator = clause_iterator->begin();
             while (literal_iterator != clause_iterator->end()) {
-                if (std::get<2>(*literal_iterator) == 1) {
+                if (std::get<2>(*literal_iterator) == 1) {  //we satisfy the clause, thus it gets erased
                     clause_iterator = ClonedInstance.get_clauses().erase(clause_iterator);
                     literal_iterator = clause_iterator->begin();
                 }
-                else if (std::get<2>(*literal_iterator) == -1) {
+                else if (std::get<2>(*literal_iterator) == -1) {    //we delete the literal from the clause
                     literal_iterator = clause_iterator->erase(literal_iterator);
                 }
                 else {
                     ++ literal_iterator;
                 }
             }
-            if (clause_iterator->empty()) {
+            if (clause_iterator->empty()) { //this clause is now empty, that's a contradiction
                 return false;
             }
             else {
@@ -129,7 +129,7 @@ bool unit_propagation(SAT & instance) {
         }
 
     }
-    instance = ClonedInstance;
+    instance = ClonedInstance;  //we simplified the instance
     return true;
 }
 
@@ -146,67 +146,32 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
         }
     }
     std::sort(SortedVariables.begin(), SortedVariables.end(), [] (const std::pair<int,double> & a, const std::pair<int,double> & b) {return a.second < b.second;});
+    //we now have the variables sorted
     for (int variable = 0; variable < 0.05*SortedVariables.size(); variable++) {
         SAT PositiveClonedInstance = instance;
         SAT NegativeClonedInstance = instance;
-        for (int clause = 0; clause < NegativeClonedInstance.get_clauses().size(); clause++) {  //we set the variable to false
-            bool satisfied = false;
-            bool occurred = false;
-            for (int tuple = 0; tuple < NegativeClonedInstance.get_clauses()[clause].size(); tuple++) {
-                if (std::get<0>(NegativeClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable].first) {
-                    occurred = true;    //the variable occurs in this clause..
-                    if (not std::get<1>(NegativeClonedInstance.get_clauses()[clause][tuple])) {
-                        satisfied = true;    //..and also satisfies the clause
-                    }
-                }
-            }
-            if (occurred and satisfied) {
-                NegativeClonedInstance.delete_clause(clause);
-                clause -= 1;
-            }
-            else if (occurred) {
-                NegativeClonedInstance.delete_literal(clause, SortedVariables[variable].first);
-            }
-        }
-        for (int clause = 0; clause < PositiveClonedInstance.get_clauses().size(); clause++) {    //same but set variable to true
-            bool satisfied = false;
-            bool occurred = false;
-            for (int tuple = 0; tuple < PositiveClonedInstance.get_clauses()[clause].size(); tuple++) {
-                if (std::get<0>(PositiveClonedInstance.get_clauses()[clause][tuple]) == SortedVariables[variable].first) {
-                    occurred = true;
-                    if (std::get<1>(PositiveClonedInstance.get_clauses()[clause][tuple])) {
-                        satisfied = true;
-                    }
-                }
-            }
-            if (occurred and satisfied) {
-                PositiveClonedInstance.delete_clause(clause);
-                clause -= 1;
-            }
-            else if (occurred) {
-                PositiveClonedInstance.delete_literal(clause, SortedVariables[variable].first);
-            }
-        }
+        NegativeClonedInstance.set_variable_false(SortedVariables[variable].first);
+        PositiveClonedInstance.set_variable_true(SortedVariables[variable].first);
         bool result_negative_clone = unit_propagation(NegativeClonedInstance);  //remark: This may simplify the cloned instances
         bool result_positive_clone = unit_propagation(PositiveClonedInstance);
-        if (!result_negative_clone and !result_positive_clone) {
+        if (!result_negative_clone and !result_positive_clone) {    //we found a contradiction
             return LocalProcessing::backtrack;
         }
-        else if (result_negative_clone and !result_positive_clone) {
+        else if (result_negative_clone and !result_positive_clone) {    //we fix the variable on false
             instance = NegativeClonedInstance;
             return LocalProcessing::simplified;
         }
-        else if (!result_negative_clone and result_positive_clone) {    //hier sagt er mir die Bedingung wäre immer erfüllt, falls wir hier hin kommen??
+        else if (!result_negative_clone and result_positive_clone) {    //hier sagt es mir die Bedingung wäre immer erfüllt, falls wir hier hin kommen??
             instance = PositiveClonedInstance;
             return LocalProcessing::simplified;
         }
     }
-    return LocalProcessing::not_simplified;
+    return LocalProcessing::not_simplified; //didn't help, we want to do normal algorithm again
 }
 
 bool c_sat(SAT & instance) {
     int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<std::tuple<int,bool,int>> & a, const std::vector<std::tuple<int,bool,int>> & b) {return a.size() < b.size();})).size(); //ich wollte es mit std::max machen, hab es aber nicht hinbekommen
-    std::vector<const double> SizeFactor {0};
+    std::vector<const double> SizeFactor {0};   //initialize with 0 so variable and place in vector line up
     for (int size = 1; size <= size_of_biggest_clause; size++) {
         SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
     }
@@ -222,7 +187,7 @@ bool c_sat(SAT & instance) {
             DifferentPaths.pop();   //instance not satisfiable anymore, we found a clause which can not be satisfied anymore
         }
 
-        if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) {
+        if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
             tried_local_processing = false;
             std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
             if (std::get<1>(chosen_variable)) {
@@ -238,17 +203,17 @@ bool c_sat(SAT & instance) {
                 current_instance.set_variable_false(std::get<0>(chosen_variable));
             }
         }
-        else {
+        else {  //local processing
             LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
-            if (result_local_processing == LocalProcessing::backtrack) {
+            if (result_local_processing == LocalProcessing::backtrack) {    //dead-end, we try another next path
                 DifferentPaths.pop();
             }
-            else if (result_local_processing == LocalProcessing::not_simplified) {
+            else if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
                 tried_local_processing = true;
             }
         }
     }
-    return false;
+    return false;   //tried everything
 }
 
 
