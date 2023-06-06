@@ -21,7 +21,6 @@ public:
     unsigned long get_number_variables() const;
     unsigned long get_number_assigned_variables() const;
     unsigned long get_number_clauses() const;
-    std::vector<std::pair<int,int>> variable_scan();
     void delete_clause(int clause);
     void delete_literal(int clause, int variable);
     std::vector<std::vector<std::tuple<int,bool,int>>> get_clauses();

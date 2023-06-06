@@ -9,6 +9,9 @@
 #include <sstream>
 
 SAT::SAT(char const* filename) {
+    num_assigned_variables = 0;
+    variables = 0;
+    clauses = 0;
     std::ifstream file(filename);                             // open file
     if (not file) {
         throw std::runtime_error("Cannot open file.");
@@ -137,18 +140,6 @@ void SAT::reset_variable(int variable) {
     }
 }
 
-/*std::vector<std::pair<int,int>> SAT::variable_scan() {
-    std::vector<std::vector<std::pair<int,int>>> VariableLocations(int(get_number_variables()), std::vector<std::pair<int,int>>);
-    int current_clause = 0;
-    int current_tuple = 0;
-    for (auto & clause : instance) {
-        for (auto & tuple : clause) {
-            VariableLocations
-        }
-        current_clause += 1;
-        current_tuple = 0;
-    }
-}*/
 void SAT::delete_clause(int clause) {
     clauses -= 1;
     instance.erase(instance.begin() +clause);
@@ -168,10 +159,10 @@ void SAT::set_variable_false(int variable) {
     for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to false
         bool satisfied = false;
         bool occurred = false;
-        for (int tuple = 0; tuple < instance[clause].size(); tuple++) {
-            if (std::get<0>(instance[clause][tuple]) == variable) {
+        for (const auto & tuple : instance[clause]) {
+            if (std::get<0>(tuple) == variable) {
                 occurred = true;    //the variable occurs in this clause..
-                if (not std::get<1>(instance[clause][tuple])) {
+                if (not std::get<1>(tuple)) {
                     satisfied = true;    //..and also satisfies the clause
                 }
             }
@@ -191,10 +182,10 @@ void SAT::set_variable_true(int variable) {
     for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to true
         bool satisfied = false;
         bool occurred = false;
-        for (int tuple = 0; tuple < instance[clause].size(); tuple++) {
-            if (std::get<0>(instance[clause][tuple]) == variable) {
+        for (const auto & tuple : instance[clause]) {
+            if (std::get<0>(tuple) == variable) {
                 occurred = true;    //the variable occurs in this clause..
-                if (std::get<1>(instance[clause][tuple])) {
+                if (std::get<1>(tuple)) {
                     satisfied = true;    //..and also satisfies the clause
                 }
             }
