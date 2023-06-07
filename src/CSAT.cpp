@@ -170,7 +170,7 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
 }
 
 bool c_sat(SAT & instance) {
-    int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<std::tuple<int,bool,int>> & a, const std::vector<std::tuple<int,bool,int>> & b) {return a.size() < b.size();})).size(); //ich wollte es mit std::max machen, hab es aber nicht hinbekommen
+    int size_of_biggest_clause = (*std::max_element(instance.get_clause_iterator(), instance.get_clause_iterator_end() , [] (const std::vector<std::tuple<int,bool,int>> & a, const std::vector<std::tuple<int,bool,int>> & b) {return a.size() < b.size();})).size(); //ich wollte es mit std::max machen, hab es aber nicht hinbekommen
     std::vector<const double> SizeFactor {0};   //initialize with 0 so variable and place in vector line up
     for (int size = 1; size <= size_of_biggest_clause; size++) {
         SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
@@ -179,15 +179,17 @@ bool c_sat(SAT & instance) {
     DifferentPaths.push(instance);
     bool tried_local_processing = false;
     while (not DifferentPaths.empty()) {
-        SAT current_instance = DifferentPaths.front();
+        SAT current_instance = std::move(DifferentPaths.front());
+        DifferentPaths.pop();
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::any_of(begin(current_instance.get_clauses()), end(current_instance.get_clauses()),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
-            DifferentPaths.pop();   //instance not satisfiable anymore, we found a clause which can not be satisfied anymore
+        else if (std::any_of(current_instance.get_clause_iterator(), current_instance.get_clause_iterator_end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+
+            //DifferentPaths.pop();   //instance not satisfiable anymore, we found a clause which can not be satisfied anymore
         }
 
-        if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
+        else if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
             tried_local_processing = false;
             std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
             if (std::get<1>(chosen_variable)) {
@@ -195,20 +197,22 @@ bool c_sat(SAT & instance) {
                 cloned_instance.set_variable_false(std::get<0>(chosen_variable));
                 DifferentPaths.push(cloned_instance);
                 current_instance.set_variable_true(std::get<0>(chosen_variable));
+                DifferentPaths.emplace(std::move(current_instance));
             }
             else {
                 SAT cloned_instance = current_instance;
                 cloned_instance.set_variable_true(std::get<0>(chosen_variable));
                 DifferentPaths.push(cloned_instance);
                 current_instance.set_variable_false(std::get<0>(chosen_variable));
+                DifferentPaths.emplace(std::move(current_instance));
             }
         }
         else {  //local processing
             LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
-            if (result_local_processing == LocalProcessing::backtrack) {    //dead-end, we try another next path
-                DifferentPaths.pop();
+            if (not (result_local_processing == LocalProcessing::backtrack)) {    //dead-end, we try another next path
+                DifferentPaths.emplace(std::move(current_instance));
             }
-            else if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
+            if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
                 tried_local_processing = true;
             }
         }

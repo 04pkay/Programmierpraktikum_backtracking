@@ -1,6 +1,8 @@
 #include <iostream>
 #include "../include/SAT.h"
 #include "../include/backtracking.h"
+#include "../include/ASAT.h"
+#include "../include/CSAT.h"
 
 int main(int argc, char* argv[]) {
     if (argc > 1){
@@ -21,7 +23,7 @@ int main(int argc, char* argv[]) {
         else {
             std::cout << "OH NO?" << std::endl;
         }*/
-        if (backtracking_non_recursive(g)) {
+        if (c_sat(g)) {
             std::cout << std::endl << "YIPPI" << std::endl;
         }
         else {

@@ -169,6 +169,7 @@ void SAT::set_variable_false(int variable) {
         }
         if (occurred and satisfied) {
             delete_clause(clause);
+            clauses -= 1;
             clause -= 1;
         }
         else if (occurred) {
@@ -192,6 +193,7 @@ void SAT::set_variable_true(int variable) {
         }
         if (occurred and satisfied) {
             delete_clause(clause);
+            clauses -= 1;
             clause -= 1;
         }
         else if (occurred) {
@@ -202,6 +204,10 @@ void SAT::set_variable_true(int variable) {
 
 std::vector<std::vector<std::tuple<int,bool,int>>>::iterator SAT::get_clause_iterator() {
     return instance.begin();
+}
+
+std::vector<std::vector<std::tuple<int,bool,int>>>::iterator SAT::get_clause_iterator_end() {
+    return instance.end();
 }
 
 unsigned long SAT::get_number_assigned_variables() const {

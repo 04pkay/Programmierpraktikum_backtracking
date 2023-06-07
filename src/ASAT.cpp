@@ -7,24 +7,8 @@
 #include <queue>
 
 int branching_rule(SAT & current_instance) {
-    //std::vector<std::vector<std::tuple<int,bool,int>>> ShortestClauses;
     int HowShort = std::numeric_limits<int>::max();
-    /*for (auto & clause : current_instance.get_clauses()) {
-        if (clause.size() < HowShort) { //we found a shorter clause
-            HowShort = clause.size();
-            ShortestClauses.clear();
-            ShortestClauses.push_back(clause);
-        }
-        else if (clause.size() == HowShort) { //we add this clause
-            ShortestClauses.push_back(clause);
-        }
-    }*/
     std::vector<int> VariableOccurrences(int(current_instance.get_number_variables()), 0);  //here we store how often variables occur in the shortest clauses
-    /*for (auto & clause : ShortestClauses) {
-        for (auto & tuple : clause) {
-            VariableOccurrences[std::get<0>(tuple)-1] += 1;
-        }
-    }*/
 
     for (auto & clause : current_instance.get_clauses()) {
         if (clause.size() < HowShort) {
@@ -53,55 +37,21 @@ bool a_sat(SAT & instance) {
     std::queue<SAT> DifferentPaths; //here we store the instances, where we put the selected variable to false instead of true
     DifferentPaths.push(instance);
     while (not DifferentPaths.empty()) {
-        SAT current_instance = DifferentPaths.front();
+        SAT current_instance = std::move(DifferentPaths.front());
+        DifferentPaths.pop();
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::any_of(begin(current_instance.get_clauses()), end(current_instance.get_clauses()),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+        /*else if (std::any_of(current_instance.get_clause_iterator(), current_instance.get_clause_iterator_end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
             DifferentPaths.pop();   //instance not satisfiable anymore, we found a clause which can not be satisfied anymore
-        }
-        else {
+        }*/
+        else if (std::none_of(current_instance.get_clause_iterator(), current_instance.get_clause_iterator_end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
             int ChosenVariable = branching_rule(current_instance);
             SAT ClonedInstance = current_instance;
-            for (int clause = 0; clause < ClonedInstance.get_clauses().size(); clause++) {  //we set the variable to false
-                bool satisfied = false;
-                bool occurred = false;
-                for (int tuple = 0; tuple < ClonedInstance.get_clauses()[clause].size(); tuple++) {
-                    if (std::get<0>(ClonedInstance.get_clauses()[clause][tuple]) == ChosenVariable) {
-                        occurred = true;    //the variable occurs in this clause..
-                        if (not std::get<1>(ClonedInstance.get_clauses()[clause][tuple])) {
-                            satisfied = true;    //..and also satisfies the clause
-                        }
-                    }
-                }
-                if (occurred and satisfied) {
-                    ClonedInstance.delete_clause(clause);
-                    clause -= 1;
-                }
-                else if (occurred) {
-                    ClonedInstance.delete_literal(clause, ChosenVariable);
-                }
-            }
+            ClonedInstance.set_variable_false(ChosenVariable);
             DifferentPaths.push(ClonedInstance);
-            for (int clause = 0; clause < current_instance.get_clauses().size(); clause++) {    //same but set variable to true
-                bool satisfied = false;
-                bool occurred = false;
-                for (int tuple = 0; tuple < current_instance.get_clauses()[clause].size(); tuple++) {
-                    if (std::get<0>(current_instance.get_clauses()[clause][tuple]) == ChosenVariable) {
-                        occurred = true;
-                        if (std::get<1>(current_instance.get_clauses()[clause][tuple])) {
-                            satisfied = true;
-                        }
-                    }
-                }
-                if (occurred and satisfied) {
-                    current_instance.delete_clause(clause);
-                    clause -= 1;
-                }
-                else if (occurred) {
-                    current_instance.delete_literal(clause, ChosenVariable);
-                }
-            }
+            current_instance.set_variable_true(ChosenVariable);
+            DifferentPaths.emplace(std::move(current_instance));
         }
     }
     return false;   //we tried everything :(
