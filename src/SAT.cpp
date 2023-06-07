@@ -146,8 +146,8 @@ void SAT::delete_clause(int clause) {
 }
 
 void SAT::delete_literal(int clause, int variable) {
-    auto NoMoreLiteral = std::remove_if(begin(instance[clause-1]), end(instance[clause-1]),[variable](std::tuple<int,bool,int> tuple) { return (std::get<0>(tuple) == variable);});
-    instance[clause-1].erase(NoMoreLiteral,instance[clause-1].end());
+    auto NoMoreLiteral = std::remove_if(begin(instance[clause]), end(instance[clause]),[variable](std::tuple<int,bool,int> tuple) { return (std::get<0>(tuple) == variable);});
+    instance[clause].erase(NoMoreLiteral,instance[clause].end());
 }
 
 std::vector<std::vector<std::tuple<int, bool, int>>> SAT::get_clauses() {
@@ -169,7 +169,6 @@ void SAT::set_variable_false(int variable) {
         }
         if (occurred and satisfied) {
             delete_clause(clause);
-            clauses -= 1;
             clause -= 1;
         }
         else if (occurred) {
@@ -193,7 +192,6 @@ void SAT::set_variable_true(int variable) {
         }
         if (occurred and satisfied) {
             delete_clause(clause);
-            clauses -= 1;
             clause -= 1;
         }
         else if (occurred) {

@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
         else {
             std::cout << "OH NO?" << std::endl;
         }*/
-        if (c_sat(g)) {
+        if (a_sat(g)) {
             std::cout << std::endl << "YIPPI" << std::endl;
         }
         else {
