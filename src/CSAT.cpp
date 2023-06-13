@@ -115,20 +115,20 @@ bool unit_propagation(SAT & instance) {
                 if (std::get<2>(*literal_iterator) == 1) {  //we satisfy the clause, thus it gets erased
                     clause_iterator = ClonedInstance.erase_clause(clause_iterator);
                     literal_iterator = clause_iterator->begin();
-                }
-                else if (std::get<2>(*literal_iterator) == -1) {    //we delete the literal from the clause
+                } else if (std::get<2>(*literal_iterator) == -1) {    //we delete the literal from the clause
                     literal_iterator = clause_iterator->erase(literal_iterator);
+                } else {
+                    ++literal_iterator;
+                }
+            }
+            if (clause_iterator != ClonedInstance.get_clause_iterator_end()) {
+                if (clause_iterator->empty()) { //this clause is now empty, that's a contradiction
+                    return false;
                 }
                 else {
-                    ++ literal_iterator;
+                    ++clause_iterator;
                 }
-            }
-            if (clause_iterator->empty()) { //this clause is now empty, that's a contradiction
-                return false;
-            }
-            else {
-                ++ clause_iterator;
-            }
+        }
         }
 
     }
@@ -136,7 +136,7 @@ bool unit_propagation(SAT & instance) {
     return true;
 }
 
-enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1};
+enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1, solved = 4};
 
 LocalProcessing local_processing(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<int,double>> SortedVariables;
@@ -167,6 +167,9 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
         else if (!result_negative_clone and result_positive_clone) {    //hier sagt es mir die Bedingung wäre immer erfüllt, falls wir hier hin kommen??
             instance = PositiveClonedInstance;
             return LocalProcessing::simplified;
+        }
+        else if (NegativeClonedInstance.get_clauses().empty() or PositiveClonedInstance.get_clauses().empty()) {
+            return LocalProcessing::solved;
         }
     }
     return LocalProcessing::not_simplified; //didn't help, we want to do normal algorithm again
@@ -214,6 +217,9 @@ bool c_sat(SAT & instance) {
             LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
             if (not (result_local_processing == LocalProcessing::backtrack)) {    //dead-end, we try another next path
                 DifferentPaths.emplace(std::move(current_instance));
+            }
+            if (result_local_processing == LocalProcessing::solved) {
+                return true;
             }
             if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
                 tried_local_processing = true;
