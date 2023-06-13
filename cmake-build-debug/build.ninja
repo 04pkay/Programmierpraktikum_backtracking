@@ -49,30 +49,35 @@ build cmake_object_order_depends_target_Programmierpraktikum: phony || CMakeFile
 build CMakeFiles/Programmierpraktikum.dir/src/main.cpp.o: CXX_COMPILER__Programmierpraktikum_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/main.cpp || cmake_object_order_depends_target_Programmierpraktikum
   DEP_FILE = CMakeFiles/Programmierpraktikum.dir/src/main.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
   OBJECT_FILE_DIR = CMakeFiles/Programmierpraktikum.dir/src
 
 build CMakeFiles/Programmierpraktikum.dir/src/SAT.cpp.o: CXX_COMPILER__Programmierpraktikum_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/SAT.cpp || cmake_object_order_depends_target_Programmierpraktikum
   DEP_FILE = CMakeFiles/Programmierpraktikum.dir/src/SAT.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
   OBJECT_FILE_DIR = CMakeFiles/Programmierpraktikum.dir/src
 
 build CMakeFiles/Programmierpraktikum.dir/src/backtracking.cpp.o: CXX_COMPILER__Programmierpraktikum_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/backtracking.cpp || cmake_object_order_depends_target_Programmierpraktikum
   DEP_FILE = CMakeFiles/Programmierpraktikum.dir/src/backtracking.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
   OBJECT_FILE_DIR = CMakeFiles/Programmierpraktikum.dir/src
 
 build CMakeFiles/Programmierpraktikum.dir/src/ASAT.cpp.o: CXX_COMPILER__Programmierpraktikum_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/ASAT.cpp || cmake_object_order_depends_target_Programmierpraktikum
   DEP_FILE = CMakeFiles/Programmierpraktikum.dir/src/ASAT.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
   OBJECT_FILE_DIR = CMakeFiles/Programmierpraktikum.dir/src
 
 build CMakeFiles/Programmierpraktikum.dir/src/CSAT.cpp.o: CXX_COMPILER__Programmierpraktikum_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/CSAT.cpp || cmake_object_order_depends_target_Programmierpraktikum
   DEP_FILE = CMakeFiles/Programmierpraktikum.dir/src/CSAT.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/Programmierpraktikum.dir
   OBJECT_FILE_DIR = CMakeFiles/Programmierpraktikum.dir/src
 

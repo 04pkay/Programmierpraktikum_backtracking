@@ -211,3 +211,13 @@ std::vector<std::vector<std::tuple<int,bool,int>>>::iterator SAT::get_clause_ite
 unsigned long SAT::get_number_assigned_variables() const {
     return num_assigned_variables;
 }
+
+std::vector<std::vector<std::tuple<int, bool, int>>>::iterator SAT::erase_clause(std::vector<std::vector<std::tuple<int, bool, int>>>::iterator clause_iterator) {
+    return instance.erase(clause_iterator);
+}
+
+std::vector<std::tuple<int, bool, int>>::iterator
+SAT::erase_literal(std::vector<std::vector<std::tuple<int, bool, int>>>::iterator clause_iterator,
+                   std::vector<std::tuple<int, bool, int>>::iterator literal_iterator) {
+    return clause_iterator->erase(literal_iterator);
+}

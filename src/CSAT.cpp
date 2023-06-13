@@ -2,24 +2,24 @@
 // Created by Pascal Kessler on 30.05.23.
 //
 
-#include "../include/SAT.h"
+#include <SAT.h>
 #include <vector>
 #include <cmath>
 #include <queue>
 
 std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair<double,double>(0,0));
-    std::vector<std::vector<std::tuple<int,bool,int>>*> ClausesLenTwo;
-    for (auto & clause : instance.get_clauses()) {
-        if (clause.size() == 2) {
-            ClausesLenTwo.push_back(&clause);
+    std::vector<std::vector<std::vector<std::tuple<int,bool,int>>>::iterator> ClausesLenTwo;
+    for (auto clause = instance.get_clause_iterator(); clause != instance.get_clause_iterator_end(); clause++) {
+        if ((*clause).size() == 2) {
+            ClausesLenTwo.push_back(clause);
         }
-        for (auto & tuple : clause) {
+        for (auto & tuple : *clause) {
             if (std::get<1>(tuple)) {   //positive occurrence
-                VariableOccurrences[std::get<0>(tuple)-1].first += SizeFactor[clause.size()];
+                VariableOccurrences[std::get<0>(tuple)-1].first += SizeFactor[(*clause).size()];
             }
             else {  //negative occurrence
-                VariableOccurrences[std::get<0>(tuple)-1].second += SizeFactor[clause.size()];
+                VariableOccurrences[std::get<0>(tuple)-1].second += SizeFactor[(*clause).size()];
             }
         }
     }
@@ -86,7 +86,7 @@ std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const doub
             maximum_value = current_value;
         }
     }
-    return std::make_pair(chosen_variable, VariableOccurrences[chosen_variable].first >= VariableOccurrences[chosen_variable].second);  //we return the chosen variable and if there are more/equal positive occurrences than negative ones
+    return std::make_pair(chosen_variable + 1, VariableOccurrences[chosen_variable].first >= VariableOccurrences[chosen_variable].second);  //we return the chosen variable and if there are more/equal positive occurrences than negative ones
 }
 
 bool unit_propagation(SAT & instance) {
@@ -104,13 +104,16 @@ bool unit_propagation(SAT & instance) {
                     return false;
                 }
             }
+            else if (clause.empty()) {
+                return false;
+            }
         }
         auto clause_iterator = ClonedInstance.get_clause_iterator();    //hier hatte ich vorher ClonedInstance.get_clause().begin(), da hat clang_tidy gemeckert, ich bin mir aber nicht sicher gewesen ob der iterator am ende ins nichts gezeigt hätte oder ob das auch klappen würde
-        while (clause_iterator != ClonedInstance.get_clauses().begin()) {
+        while (clause_iterator != ClonedInstance.get_clause_iterator_end()) {
             auto literal_iterator = clause_iterator->begin();
             while (literal_iterator != clause_iterator->end()) {
                 if (std::get<2>(*literal_iterator) == 1) {  //we satisfy the clause, thus it gets erased
-                    clause_iterator = ClonedInstance.get_clauses().erase(clause_iterator);
+                    clause_iterator = ClonedInstance.erase_clause(clause_iterator);
                     literal_iterator = clause_iterator->begin();
                 }
                 else if (std::get<2>(*literal_iterator) == -1) {    //we delete the literal from the clause
@@ -145,7 +148,7 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
             SortedVariables[std::get<0>(tuple)-1].second += SizeFactor[clause.size()];
         }
     }
-    std::sort(SortedVariables.begin(), SortedVariables.end(), [] (const std::pair<int,double> & a, const std::pair<int,double> & b) {return a.second < b.second;});
+    std::sort(SortedVariables.begin(), SortedVariables.end(), [] (const std::pair<int,double> & a, const std::pair<int,double> & b) {return a.second > b.second;});
     //we now have the variables sorted
     for (int variable = 0; variable < 0.05*SortedVariables.size(); variable++) {
         SAT PositiveClonedInstance = instance;
@@ -175,7 +178,7 @@ bool c_sat(SAT & instance) {
     for (int size = 1; size <= size_of_biggest_clause; size++) {
         SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
     }
-    std::queue<SAT> DifferentPaths; //here we store the instances, where we put the selected variable to false instead of true
+    std::queue<SAT> DifferentPaths; //here we store the instances with different variable settings
     DifferentPaths.push(instance);
     bool tried_local_processing = false;
     while (not DifferentPaths.empty()) {

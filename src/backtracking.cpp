@@ -2,7 +2,7 @@
 // Created by Pascal Kessler on 18.03.23.
 //
 
-#include "../include/SAT.h"
+#include <SAT.h>
 #include <vector>
 
 
