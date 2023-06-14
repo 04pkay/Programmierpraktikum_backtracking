@@ -150,7 +150,7 @@ void SAT::delete_literal(int clause, int variable) {
     instance[clause].erase(NoMoreLiteral,instance[clause].end());
 }
 
-std::vector<std::vector<std::tuple<int, bool, int>>> SAT::get_clauses() {
+std::vector<std::vector<std::tuple<int, bool, int>>>& SAT::get_clauses() {
     return instance;
 }
 
