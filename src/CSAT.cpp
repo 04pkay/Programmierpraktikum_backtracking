@@ -190,39 +190,36 @@ bool c_sat(SAT & instance) {
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::any_of(current_instance.get_clause_iterator(), current_instance.get_clause_iterator_end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
-
-            //DifferentPaths.pop();   //instance not satisfiable anymore, we found a clause which can not be satisfied anymore
-        }
-
-        else if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
-            tried_local_processing = false;
-            std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
-            if (std::get<1>(chosen_variable)) {
-                SAT cloned_instance = current_instance;
-                cloned_instance.set_variable_false(std::get<0>(chosen_variable));
-                DifferentPaths.push(cloned_instance);
-                current_instance.set_variable_true(std::get<0>(chosen_variable));
-                DifferentPaths.emplace(std::move(current_instance));
+        else if (std::none_of(current_instance.get_clause_iterator(), current_instance.get_clause_iterator_end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+            if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
+                tried_local_processing = false;
+                std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
+                if (std::get<1>(chosen_variable)) {
+                    SAT cloned_instance = current_instance;
+                    cloned_instance.set_variable_false(std::get<0>(chosen_variable));
+                    DifferentPaths.push(cloned_instance);
+                    current_instance.set_variable_true(std::get<0>(chosen_variable));
+                    DifferentPaths.emplace(std::move(current_instance));
+                }
+                else {
+                    SAT cloned_instance = current_instance;
+                    cloned_instance.set_variable_true(std::get<0>(chosen_variable));
+                    DifferentPaths.push(cloned_instance);
+                    current_instance.set_variable_false(std::get<0>(chosen_variable));
+                    DifferentPaths.emplace(std::move(current_instance));
+                }
             }
-            else {
-                SAT cloned_instance = current_instance;
-                cloned_instance.set_variable_true(std::get<0>(chosen_variable));
-                DifferentPaths.push(cloned_instance);
-                current_instance.set_variable_false(std::get<0>(chosen_variable));
-                DifferentPaths.emplace(std::move(current_instance));
-            }
-        }
-        else {  //local processing
-            LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
-            if (not (result_local_processing == LocalProcessing::backtrack)) {    //dead-end, we try another next path
-                DifferentPaths.emplace(std::move(current_instance));
-            }
-            if (result_local_processing == LocalProcessing::solved) {
-                return true;
-            }
-            if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
-                tried_local_processing = true;
+            else {  //local processing
+                LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
+                if (result_local_processing != LocalProcessing::backtrack) {    //dead-end, we try another next path
+                    DifferentPaths.emplace(std::move(current_instance));
+                    if (result_local_processing == LocalProcessing::solved) {
+                        return true;
+                    }
+                    if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
+                        tried_local_processing = true;
+                    }
+                }
             }
         }
     }
