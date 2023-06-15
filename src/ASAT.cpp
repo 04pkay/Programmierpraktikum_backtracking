@@ -43,7 +43,7 @@ bool a_sat(SAT & instance) {
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::none_of(current_instance.get_clause_iterator(), current_instance.get_clause_iterator_end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
             int ChosenVariable = branching_rule(current_instance);
             SAT ClonedInstance = current_instance;
             ClonedInstance.set_variable_false(ChosenVariable);

@@ -10,7 +10,7 @@
 std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair<double,double>(0,0));
     std::vector<std::vector<std::vector<std::tuple<int,bool,int>>>::iterator> ClausesLenTwo;
-    for (auto clause = instance.get_clause_iterator(); clause != instance.get_clause_iterator_end(); clause++) {
+    for (auto clause = instance.get_clauses().begin(); clause != instance.get_clauses().end(); clause++) {
         if ((*clause).size() == 2) {
             ClausesLenTwo.push_back(clause);
         }
@@ -181,7 +181,7 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
 }
 
 bool c_sat(SAT & instance) {
-    int size_of_biggest_clause = (*std::max_element(instance.get_clause_iterator(), instance.get_clause_iterator_end() , [] (const std::vector<std::tuple<int,bool,int>> & a, const std::vector<std::tuple<int,bool,int>> & b) {return a.size() < b.size();})).size(); //ich wollte es mit std::max machen, hab es aber nicht hinbekommen
+    int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<std::tuple<int,bool,int>> & a, const std::vector<std::tuple<int,bool,int>> & b) {return a.size() < b.size();})).size(); //ich wollte es mit std::max machen, hab es aber nicht hinbekommen
     std::vector<const double> SizeFactor {0};   //initialize with 0 so variable and place in vector line up
     for (int size = 1; size <= size_of_biggest_clause; size++) {
         SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
@@ -195,7 +195,7 @@ bool c_sat(SAT & instance) {
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::none_of(current_instance.get_clause_iterator(), current_instance.get_clause_iterator_end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
             if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
                 tried_local_processing = false;
                 std::pair chosen_variable = choose_variable(current_instance, SizeFactor);

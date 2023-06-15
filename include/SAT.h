@@ -26,8 +26,6 @@ public:
     std::vector<std::vector<std::tuple<int,bool,int>>>::iterator erase_clause(std::vector<std::vector<std::tuple<int, bool, int>>>::iterator clause_iterator);
     std::vector<std::tuple<int,bool,int>>::iterator erase_literal(std::vector<std::vector<std::tuple<int, bool, int>>>::iterator clause_iterator, std::vector<std::tuple<int, bool, int>>::iterator literal_iterator);
     std::vector<std::vector<std::tuple<int,bool,int>>>& get_clauses();
-    std::vector<std::vector<std::tuple<int,bool,int>>>::iterator get_clause_iterator();
-    std::vector<std::vector<std::tuple<int,bool,int>>>::iterator get_clause_iterator_end();
 private:
      std::vector<std::vector<std::tuple<int,bool,int>>> instance;
      unsigned long variables;
