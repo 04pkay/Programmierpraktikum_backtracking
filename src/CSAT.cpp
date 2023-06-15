@@ -108,20 +108,25 @@ bool unit_propagation(SAT & instance) {
                 return false;
             }
         }
-        auto clause_iterator = ClonedInstance.get_clause_iterator();    //hier hatte ich vorher ClonedInstance.get_clause().begin(), da hat clang_tidy gemeckert, ich bin mir aber nicht sicher gewesen ob der iterator am ende ins nichts gezeigt hätte oder ob das auch klappen würde
-        while (clause_iterator != ClonedInstance.get_clause_iterator_end()) {
+        auto clause_iterator = ClonedInstance.get_clauses().begin();
+        while (clause_iterator != ClonedInstance.get_clauses().end()) {
             auto literal_iterator = clause_iterator->begin();
-            while (literal_iterator != clause_iterator->end()) {
+            while (clause_iterator != ClonedInstance.get_clauses().end() and literal_iterator != clause_iterator->end()) {
                 if (std::get<2>(*literal_iterator) == 1) {  //we satisfy the clause, thus it gets erased
+                    std::destroy_at(&literal_iterator);
                     clause_iterator = ClonedInstance.erase_clause(clause_iterator);
-                    literal_iterator = clause_iterator->begin();
-                } else if (std::get<2>(*literal_iterator) == -1) {    //we delete the literal from the clause
+                    if (clause_iterator != ClonedInstance.get_clauses().end()) {
+                        literal_iterator = clause_iterator->begin();
+                    }
+                }
+                else if (std::get<2>(*literal_iterator) == -1) {    //we delete the literal from the clause
                     literal_iterator = clause_iterator->erase(literal_iterator);
-                } else {
+                }
+                else {
                     ++literal_iterator;
                 }
             }
-            if (clause_iterator != ClonedInstance.get_clause_iterator_end()) {
+            if (clause_iterator != ClonedInstance.get_clauses().end()) {
                 if (clause_iterator->empty()) { //this clause is now empty, that's a contradiction
                     return false;
                 }
