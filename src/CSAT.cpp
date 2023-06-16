@@ -2,75 +2,73 @@
 // Created by Pascal Kessler on 30.05.23.
 //
 
-#include <SAT.h>
+#include <slimSAT.h>
 #include <vector>
 #include <cmath>
 #include <queue>
 
 std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const double> & SizeFactor) {
-    std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair<double,double>(0,0));
-    std::vector<std::vector<std::vector<std::tuple<int,bool,int>>>::iterator> ClausesLenTwo;
+    std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair(0,0));
+    std::vector<std::vector<std::vector<int>>::iterator> ClausesLenTwo;
     for (auto clause = instance.get_clauses().begin(); clause != instance.get_clauses().end(); clause++) {
         if ((*clause).size() == 2) {
             ClausesLenTwo.push_back(clause);
         }
-        for (auto & tuple : *clause) {
-            if (std::get<1>(tuple)) {   //positive occurrence
-                VariableOccurrences[std::get<0>(tuple)-1].first += SizeFactor[(*clause).size()];
+        for (auto & literal : *clause) {
+            if (literal > 0) {   //positive occurrence
+                VariableOccurrences[std::abs(literal)-1].first += SizeFactor[(*clause).size()];
             }
             else {  //negative occurrence
-                VariableOccurrences[std::get<0>(tuple)-1].second += SizeFactor[(*clause).size()];
+                VariableOccurrences[std::abs(literal)-1].second += SizeFactor[(*clause).size()];
             }
         }
     }
 
     for (auto & clausefix : ClausesLenTwo) {
-        std::tuple<int,bool,int> First = std::make_tuple(std::get<0>((*clausefix)[0]),!std::get<1>((*clausefix)[0]),0);
-        std::tuple<int,bool,int> Second = std::make_tuple(std::get<0>((*clausefix)[1]),!std::get<1>((*clausefix)[1]),0);
-        if (std::get<1>(First) and std::get<1>(Second)) { //both variables negated
+        if ((*clausefix)[0] < 0 and (*clausefix)[1] < 0) { //both variables negated
             for (auto & clause : instance.get_clauses()) {
-                for (auto &tuple: clause) {
-                    if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].second += SizeFactor[clause.size()];
+                for (auto & literal : clause) {
+                    if (-literal == (*clausefix)[0]) {
+                        VariableOccurrences[-(*clausefix)[1] - 1].second += SizeFactor[clause.size()];
                     }
-                    if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].second += SizeFactor[clause.size()];
+                    if (-literal == (*clausefix)[1]) {
+                        VariableOccurrences[-(*clausefix)[0] - 1].second += SizeFactor[clause.size()];
                     }
                 }
             }
         }
-        else if (!std::get<1>(First) and std::get<1>(Second)) { //only second variable negated
+        else if ((*clausefix)[0] > 0 and (*clausefix)[1] < 0) { //only second variable negated
             for (auto & clause : instance.get_clauses()) {
-                for (auto &tuple: clause) {
-                    if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].second += SizeFactor[clause.size()];
+                for (auto & literal: clause) {
+                    if (-literal == (*clausefix)[0]) {
+                        VariableOccurrences[-(*clausefix)[1] - 1].second += SizeFactor[clause.size()];
                     }
-                    if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].first += SizeFactor[clause.size()];
+                    if (-literal == (*clausefix)[1]) {
+                        VariableOccurrences[(*clausefix)[0] - 1].first += SizeFactor[clause.size()];
                     }
                 }
             }
         }
-        else if (std::get<1>(First) and !std::get<1>(Second)) { //only first variable negated
+        else if ((*clausefix)[0] < 0 and (*clausefix)[1] > 0) { //only first variable negated
             for (auto & clause : instance.get_clauses()) {
-                for (auto &tuple: clause) {
-                    if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].first += SizeFactor[clause.size()];
+                for (auto & literal: clause) {
+                    if (-literal == (*clausefix)[0]) {
+                        VariableOccurrences[(*clausefix)[1] - 1].first += SizeFactor[clause.size()];
                     }
-                    if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].second += SizeFactor[clause.size()];
+                    if (-literal == (*clausefix)[1]) {
+                        VariableOccurrences[-(*clausefix)[0] - 1].second += SizeFactor[clause.size()];
                     }
                 }
             }
         }
         else { //both positive
             for (auto & clause : instance.get_clauses()) {
-                for (auto &tuple: clause) {
-                    if (tuple == First) {
-                        VariableOccurrences[std::get<0>(Second) - 1].first += SizeFactor[clause.size()];
+                for (auto & literal: clause) {
+                    if (-literal == (*clausefix)[0]) {
+                        VariableOccurrences[(*clausefix)[1] - 1].first += SizeFactor[clause.size()];
                     }
-                    if (tuple == Second) {
-                        VariableOccurrences[std::get<0>(First) - 1].first += SizeFactor[clause.size()];
+                    if (-literal == (*clausefix)[1]) {
+                        VariableOccurrences[(*clausefix)[0] - 1].first += SizeFactor[clause.size()];
                     }
                 }
             }
@@ -97,29 +95,30 @@ bool unit_propagation(SAT & instance) {
         for (auto & clause : ClonedInstance.get_clauses()) {
             if (clause.size() == 1) {
                 found_variable_fix = true;
-                if (std::get<2>(clause[0]) == 0) {  //if not yet set we set the variable such that it satisfies the clause
-                    ClonedInstance.set_variable(std::get<0>(clause[0]), std::get<1>(clause[0]));
+                for (auto & setclause : ClonedInstance.get_clauses()) {
+                   for (auto & literal : setclause) {
+                       if (literal == clause[0]) {
+                           literal = 0;
+                       }
+                       else if (-literal == clause[0]) {
+                           literal = std::numeric_limits<int>::max();
+                       }
+                   }
                 }
-                else if (std::get<2>(clause[0]) == -1) {    //this is a contradiction, the clause is not satisfiable anymore
-                    return false;
-                }
-            }
-            else if (clause.empty()) {
-                return false;
             }
         }
         auto clause_iterator = ClonedInstance.get_clauses().begin();
         while (clause_iterator != ClonedInstance.get_clauses().end()) {
             auto literal_iterator = clause_iterator->begin();
             while (clause_iterator != ClonedInstance.get_clauses().end() and literal_iterator != clause_iterator->end()) {
-                if (std::get<2>(*literal_iterator) == 1) {  //we satisfy the clause, thus it gets erased
+                if (*literal_iterator == 0) {  //we satisfy the clause, thus it gets erased
                     std::destroy_at(&literal_iterator);
                     clause_iterator = ClonedInstance.erase_clause(clause_iterator);
                     if (clause_iterator != ClonedInstance.get_clauses().end()) {
                         literal_iterator = clause_iterator->begin();
                     }
                 }
-                else if (std::get<2>(*literal_iterator) == -1) {    //we delete the literal from the clause
+                else if (*literal_iterator == std::numeric_limits<int>::max()) {    //we delete the literal from the clause
                     literal_iterator = clause_iterator->erase(literal_iterator);
                 }
                 else {
@@ -149,8 +148,8 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
         SortedVariables.push_back(std::make_pair(variable,0));
     }
     for (auto & clause : instance.get_clauses()) {
-        for (auto & tuple : clause) {
-            SortedVariables[std::get<0>(tuple)-1].second += SizeFactor[clause.size()];
+        for (auto & literal : clause) {
+            SortedVariables[std::abs(literal)-1].second += SizeFactor[clause.size()];
         }
     }
     std::sort(SortedVariables.begin(), SortedVariables.end(), [] (const std::pair<int,double> & a, const std::pair<int,double> & b) {return a.second > b.second;});
@@ -181,7 +180,7 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
 }
 
 bool c_sat(SAT & instance) {
-    int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<std::tuple<int,bool,int>> & a, const std::vector<std::tuple<int,bool,int>> & b) {return a.size() < b.size();})).size(); //ich wollte es mit std::max machen, hab es aber nicht hinbekommen
+    int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<int> & a, const std::vector<int> & b) {return a.size() < b.size();})).size();
     std::vector<const double> SizeFactor {0};   //initialize with 0 so variable and place in vector line up
     for (int size = 1; size <= size_of_biggest_clause; size++) {
         SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
@@ -195,7 +194,7 @@ bool c_sat(SAT & instance) {
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
             if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
                 tried_local_processing = false;
                 std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
