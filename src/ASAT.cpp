@@ -2,10 +2,11 @@
 // Created by Pascal Kessler on 27.05.23.
 //
 
-#include <SAT.h>
+#include <slimSAT.h>
 #include <vector>
 #include <queue>
 #include <algorithm>
+#include <cmath>
 
 int branching_rule(SAT & current_instance) {
     int HowShort = std::numeric_limits<int>::max();
@@ -15,13 +16,13 @@ int branching_rule(SAT & current_instance) {
         if (clause.size() < HowShort) {
             HowShort = clause.size();
             std::for_each(VariableOccurrences.begin(), VariableOccurrences.end(), [](int& n) {n=0;});
-            for (auto & tuple : clause) {
-                VariableOccurrences[std::get<0>(tuple)-1] += 1;
+            for (auto & literal : clause) {
+                VariableOccurrences[std::abs(literal)-1] += 1;
             }
         }
         else if (clause.size() == HowShort) {
-            for (auto & tuple : clause) {
-                VariableOccurrences[std::get<0>(tuple)-1] += 1;
+            for (auto & literal : clause) {
+                VariableOccurrences[std::abs(literal)-1] += 1;
             }
         }
     }
@@ -43,7 +44,7 @@ bool a_sat(SAT & instance) {
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<std::tuple<int, bool, int>> &clause) { return clause.empty(); })) {
+        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
             int ChosenVariable = branching_rule(current_instance);
             SAT ClonedInstance = current_instance;
             ClonedInstance.set_variable_false(ChosenVariable);

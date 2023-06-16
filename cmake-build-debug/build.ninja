@@ -98,64 +98,96 @@ build sat: CXX_EXECUTABLE_LINKER__sat_Debug CMakeFiles/sat.dir/src/main.cpp.o CM
   TARGET_PDB = sat.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target slimsat
+# Object build statements for EXECUTABLE target slim_a-sat
 
 
 #############################################
-# Order-only phony target for slimsat
+# Order-only phony target for slim_a-sat
 
-build cmake_object_order_depends_target_slimsat: phony || CMakeFiles/slimsat.dir
+build cmake_object_order_depends_target_slim_a-sat: phony || CMakeFiles/slim_a-sat.dir
 
-build CMakeFiles/slimsat.dir/src/main.cpp.o: CXX_COMPILER__slimsat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/main.cpp || cmake_object_order_depends_target_slimsat
-  DEP_FILE = CMakeFiles/slimsat.dir/src/main.cpp.o.d
+build CMakeFiles/slim_a-sat.dir/src/main.cpp.o: CXX_COMPILER__slim_a-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/main.cpp || cmake_object_order_depends_target_slim_a-sat
+  DEP_FILE = CMakeFiles/slim_a-sat.dir/src/main.cpp.o.d
   FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
-  OBJECT_DIR = CMakeFiles/slimsat.dir
-  OBJECT_FILE_DIR = CMakeFiles/slimsat.dir/src
+  OBJECT_DIR = CMakeFiles/slim_a-sat.dir
+  OBJECT_FILE_DIR = CMakeFiles/slim_a-sat.dir/src
 
-build CMakeFiles/slimsat.dir/src/slimSAT.cpp.o: CXX_COMPILER__slimsat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/slimSAT.cpp || cmake_object_order_depends_target_slimsat
-  DEP_FILE = CMakeFiles/slimsat.dir/src/slimSAT.cpp.o.d
+build CMakeFiles/slim_a-sat.dir/src/slimSAT.cpp.o: CXX_COMPILER__slim_a-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/slimSAT.cpp || cmake_object_order_depends_target_slim_a-sat
+  DEP_FILE = CMakeFiles/slim_a-sat.dir/src/slimSAT.cpp.o.d
   FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
-  OBJECT_DIR = CMakeFiles/slimsat.dir
-  OBJECT_FILE_DIR = CMakeFiles/slimsat.dir/src
+  OBJECT_DIR = CMakeFiles/slim_a-sat.dir
+  OBJECT_FILE_DIR = CMakeFiles/slim_a-sat.dir/src
 
-build CMakeFiles/slimsat.dir/src/backtracking.cpp.o: CXX_COMPILER__slimsat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/backtracking.cpp || cmake_object_order_depends_target_slimsat
-  DEP_FILE = CMakeFiles/slimsat.dir/src/backtracking.cpp.o.d
+build CMakeFiles/slim_a-sat.dir/src/ASAT.cpp.o: CXX_COMPILER__slim_a-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/ASAT.cpp || cmake_object_order_depends_target_slim_a-sat
+  DEP_FILE = CMakeFiles/slim_a-sat.dir/src/ASAT.cpp.o.d
   FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
-  OBJECT_DIR = CMakeFiles/slimsat.dir
-  OBJECT_FILE_DIR = CMakeFiles/slimsat.dir/src
-
-build CMakeFiles/slimsat.dir/src/ASAT.cpp.o: CXX_COMPILER__slimsat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/ASAT.cpp || cmake_object_order_depends_target_slimsat
-  DEP_FILE = CMakeFiles/slimsat.dir/src/ASAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
-  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
-  OBJECT_DIR = CMakeFiles/slimsat.dir
-  OBJECT_FILE_DIR = CMakeFiles/slimsat.dir/src
-
-build CMakeFiles/slimsat.dir/src/CSAT.cpp.o: CXX_COMPILER__slimsat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/CSAT.cpp || cmake_object_order_depends_target_slimsat
-  DEP_FILE = CMakeFiles/slimsat.dir/src/CSAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
-  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
-  OBJECT_DIR = CMakeFiles/slimsat.dir
-  OBJECT_FILE_DIR = CMakeFiles/slimsat.dir/src
+  OBJECT_DIR = CMakeFiles/slim_a-sat.dir
+  OBJECT_FILE_DIR = CMakeFiles/slim_a-sat.dir/src
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target slimsat
+# Link build statements for EXECUTABLE target slim_a-sat
 
 
 #############################################
-# Link the executable slimsat
+# Link the executable slim_a-sat
 
-build slimsat: CXX_EXECUTABLE_LINKER__slimsat_Debug CMakeFiles/slimsat.dir/src/main.cpp.o CMakeFiles/slimsat.dir/src/slimSAT.cpp.o CMakeFiles/slimsat.dir/src/backtracking.cpp.o CMakeFiles/slimsat.dir/src/ASAT.cpp.o CMakeFiles/slimsat.dir/src/CSAT.cpp.o
+build slim_a-sat: CXX_EXECUTABLE_LINKER__slim_a-sat_Debug CMakeFiles/slim_a-sat.dir/src/main.cpp.o CMakeFiles/slim_a-sat.dir/src/slimSAT.cpp.o CMakeFiles/slim_a-sat.dir/src/ASAT.cpp.o
   FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0
-  OBJECT_DIR = CMakeFiles/slimsat.dir
+  OBJECT_DIR = CMakeFiles/slim_a-sat.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_FILE = slimsat
-  TARGET_PDB = slimsat.dbg
+  TARGET_FILE = slim_a-sat
+  TARGET_PDB = slim_a-sat.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target slim-c-sat
+
+
+#############################################
+# Order-only phony target for slim-c-sat
+
+build cmake_object_order_depends_target_slim-c-sat: phony || CMakeFiles/slim-c-sat.dir
+
+build CMakeFiles/slim-c-sat.dir/src/main.cpp.o: CXX_COMPILER__slim-c-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/main.cpp || cmake_object_order_depends_target_slim-c-sat
+  DEP_FILE = CMakeFiles/slim-c-sat.dir/src/main.cpp.o.d
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
+  OBJECT_DIR = CMakeFiles/slim-c-sat.dir
+  OBJECT_FILE_DIR = CMakeFiles/slim-c-sat.dir/src
+
+build CMakeFiles/slim-c-sat.dir/src/slimSAT.cpp.o: CXX_COMPILER__slim-c-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/slimSAT.cpp || cmake_object_order_depends_target_slim-c-sat
+  DEP_FILE = CMakeFiles/slim-c-sat.dir/src/slimSAT.cpp.o.d
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
+  OBJECT_DIR = CMakeFiles/slim-c-sat.dir
+  OBJECT_FILE_DIR = CMakeFiles/slim-c-sat.dir/src
+
+build CMakeFiles/slim-c-sat.dir/src/CSAT.cpp.o: CXX_COMPILER__slim-c-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/CSAT.cpp || cmake_object_order_depends_target_slim-c-sat
+  DEP_FILE = CMakeFiles/slim-c-sat.dir/src/CSAT.cpp.o.d
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
+  OBJECT_DIR = CMakeFiles/slim-c-sat.dir
+  OBJECT_FILE_DIR = CMakeFiles/slim-c-sat.dir/src
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target slim-c-sat
+
+
+#############################################
+# Link the executable slim-c-sat
+
+build slim-c-sat: CXX_EXECUTABLE_LINKER__slim-c-sat_Debug CMakeFiles/slim-c-sat.dir/src/main.cpp.o CMakeFiles/slim-c-sat.dir/src/slimSAT.cpp.o CMakeFiles/slim-c-sat.dir/src/CSAT.cpp.o
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0
+  OBJECT_DIR = CMakeFiles/slim-c-sat.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = slim-c-sat
+  TARGET_PDB = slim-c-sat.dbg
 
 
 #############################################
@@ -191,7 +223,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/cmake-build-debug
 
-build all: phony sat slimsat
+build all: phony sat slim_a-sat slim-c-sat
 
 # =============================================================================
 # Built-in targets

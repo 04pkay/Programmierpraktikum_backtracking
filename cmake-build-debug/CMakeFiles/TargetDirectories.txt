@@ -1,4 +1,5 @@
 /Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/cmake-build-debug/CMakeFiles/sat.dir
-/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/cmake-build-debug/CMakeFiles/slimsat.dir
+/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/cmake-build-debug/CMakeFiles/slim_a-sat.dir
+/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/cmake-build-debug/CMakeFiles/slim-c-sat.dir
 /Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/cmake-build-debug/CMakeFiles/edit_cache.dir
 /Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/cmake-build-debug/CMakeFiles/rebuild_cache.dir
