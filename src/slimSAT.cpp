@@ -12,14 +12,14 @@ SAT::SAT(char const* filename) {
     num_assigned_variables = 0;
     variables = 0;
     clauses = 0;
-    std::ifstream file(filename);                             // open file
+    std::ifstream file(filename);       // open file
     if (not file) {
         throw std::runtime_error("Cannot open file.");
     }
 
     std::string line;
     std::getline(file, line);           // get first line of file
-    std::stringstream ss(line);               // convert line to a stringstream
+    std::stringstream ss(line);               // convert line to a string stream
     char FirstLetter;
     ss >> FirstLetter;
     while (FirstLetter == 'c') {        //skip comment lines
@@ -39,10 +39,10 @@ SAT::SAT(char const* filename) {
 
     std::vector<int> clause;       // -variable for negated, variable for normal
     while (std::getline(file, line)) {
-        std::stringstream ss(line);
+        std::stringstream pp(line);
         int temp;
-        ss >> temp;
-        while (ss) {
+        pp >> temp;
+        while (pp) {
             if (temp != 0) {
                 clause.push_back(temp);
             }
@@ -50,7 +50,7 @@ SAT::SAT(char const* filename) {
                 instance.push_back(clause);
                 clause.clear();
             }
-            ss >> temp;
+            pp >> temp;
         }
     }
 }
@@ -65,20 +65,20 @@ void SAT::print() const{
     std::cout << std::endl;
 }
 
-const int SAT::get_number_variables() const {
+int SAT::get_number_variables() const {
     return variables;
 }
 
-const int SAT::get_number_clauses() const {
+int SAT::get_number_clauses() const {
     return clauses;
 }
 
-void SAT::delete_clause(int clause) {
+void SAT::delete_clause(const int & clause) {
     clauses -= 1;
     instance.erase(instance.begin() +clause);
 }
 
-void SAT::delete_literal(int clause, int variable) {
+void SAT::delete_literal(const int & clause, const int & variable) {
     auto NoMoreLiteral = std::remove_if(begin(instance[clause]), end(instance[clause]),[variable](int literal) { return (literal == variable or -literal == variable);});
     instance[clause].erase(NoMoreLiteral,instance[clause].end());
 }
@@ -87,16 +87,16 @@ std::vector<std::vector<int>>& SAT::get_clauses() {
     return instance;
 }
 
-void SAT::set_variable_false(int variable) {
+void SAT::set_variable_false(const int & variable) {
     num_assigned_variables += 1;
     for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to false
         bool satisfied = false;
         bool occurred = false;
         for (const int & literal : instance[clause]) {
             if (literal == variable or -literal == variable) {
-                occurred = true;    //the variable occurs in this clause..
+                occurred = true;    //the variable occurs in this clause...
                 if (literal < 0) {
-                    satisfied = true;    //..and also satisfies the clause
+                    satisfied = true;    //...and also satisfies the clause
                 }
             }
         }
@@ -110,16 +110,16 @@ void SAT::set_variable_false(int variable) {
     }
 }
 
-void SAT::set_variable_true(int variable) {
+void SAT::set_variable_true(const int & variable) {
     num_assigned_variables += 1;
     for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to true
         bool satisfied = false;
         bool occurred = false;
         for (const int & literal : instance[clause]) {
             if (literal == variable or -literal == variable) {
-                occurred = true;    //the variable occurs in this clause..
+                occurred = true;    //the variable occurs in this clause...
                 if (literal > 0) {
-                    satisfied = true;    //..and also satisfies the clause
+                    satisfied = true;    //...and also satisfies the clause
                 }
             }
         }
@@ -133,11 +133,11 @@ void SAT::set_variable_true(int variable) {
     }
 }
 
-const int SAT::get_number_assigned_variables() const {
+int SAT::get_number_assigned_variables() const {
     return num_assigned_variables;
 }
 
-std::vector<std::vector<int>>::iterator SAT::erase_clause(std::vector<std::vector<int>>::iterator clause_iterator) {
+std::vector<std::vector<int>>::iterator SAT::erase_clause(const std::vector<std::vector<int>>::iterator & clause_iterator) {
     clauses -= 1;
     return instance.erase(clause_iterator);
 }

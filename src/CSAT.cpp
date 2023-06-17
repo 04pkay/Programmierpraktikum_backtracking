@@ -93,15 +93,16 @@ bool unit_propagation(SAT & instance) {
     while (found_variable_fix) {    //we want to stop after one iteration without change
         found_variable_fix = false;
         for (auto & clause : ClonedInstance.get_clauses()) {
-            if (clause.size() == 1) {
+            if (clause.size() == 1 and clause[0] != 0 and clause[0] != ClonedInstance.get_number_variables()+1) {
                 found_variable_fix = true;
+                int literal_fix = clause[0];
                 for (auto & setclause : ClonedInstance.get_clauses()) {
                    for (auto & literal : setclause) {
-                       if (literal == clause[0]) {
+                       if (literal == literal_fix) {
                            literal = 0;
                        }
-                       else if (-literal == clause[0]) {
-                           literal = std::numeric_limits<int>::max();
+                       else if (-literal == literal_fix) {
+                       literal = ClonedInstance.get_number_variables()+1;
                        }
                    }
                 }
@@ -118,7 +119,7 @@ bool unit_propagation(SAT & instance) {
                         literal_iterator = clause_iterator->begin();
                     }
                 }
-                else if (*literal_iterator == std::numeric_limits<int>::max()) {    //we delete the literal from the clause
+                else if (*literal_iterator == ClonedInstance.get_number_variables()+1) {    //we delete the literal from the clause
                     literal_iterator = clause_iterator->erase(literal_iterator);
                 }
                 else {
@@ -145,7 +146,7 @@ enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified
 LocalProcessing local_processing(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<int,double>> SortedVariables;
     for(int variable = 1; variable <= instance.get_number_variables(); variable++) {
-        SortedVariables.push_back(std::make_pair(variable,0));
+        SortedVariables.emplace_back(variable,0);
     }
     for (auto & clause : instance.get_clauses()) {
         for (auto & literal : clause) {
@@ -168,11 +169,11 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
             instance = NegativeClonedInstance;
             return LocalProcessing::simplified;
         }
-        else if (!result_negative_clone and result_positive_clone) {    //hier sagt es mir die Bedingung wäre immer erfüllt, falls wir hier hin kommen??
+        else if (!result_negative_clone and result_positive_clone) {    //hier sagt es mir die Bedingung wäre immer erfüllt, falls wir hier hinkommen?
             instance = PositiveClonedInstance;
             return LocalProcessing::simplified;
         }
-        else if (NegativeClonedInstance.get_clauses().empty() or PositiveClonedInstance.get_clauses().empty()) {
+        else if (NegativeClonedInstance.get_clauses().empty() or PositiveClonedInstance.get_clauses().empty()) {    //we solved one of the instances, so we are done
             return LocalProcessing::solved;
         }
     }
