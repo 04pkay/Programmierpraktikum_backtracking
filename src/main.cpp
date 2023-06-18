@@ -1,13 +1,13 @@
 #include <iostream>
 #include <slimSAT.h>
-#include <CSAT.h>
+#include <ASAT.h>
 
 int main(int argc, char* argv[]) {
     if (argc > 1){
         SAT g(argv[1]);
         g.print();
 
-        if (c_sat(g)) {
+        if (a_sat(g)) {
             std::cout << std::endl << "YIPPI" << std::endl;
         }
         else {
