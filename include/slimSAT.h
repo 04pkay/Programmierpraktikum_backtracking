@@ -19,10 +19,10 @@ public:
     int get_number_clauses() const;
     void delete_clause(const int & clause);
     void delete_literal(const int & clause,const int & variable);
-    std::vector<std::vector<int>>::iterator erase_clause(const std::vector<std::vector<int>>::iterator & clause_iterator);
-    std::vector<std::vector<int>>& get_clauses();
+    std::unordered_map<int,std::vector<int>>::iterator erase_clause(const std::unordered_map<int,std::vector<int>>::iterator & clause_iterator);
+    std::unordered_map<int,std::vector<int>>& get_clauses();
 private:
-     std::vector<std::vector<int>> instance;
+     std::unordered_map<int,std::vector<int>> instance;
      int variables;
      int clauses;
      int num_assigned_variables;

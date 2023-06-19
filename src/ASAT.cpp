@@ -13,15 +13,15 @@ int branching_rule(SAT & current_instance) {
     std::vector<int> VariableOccurrences(int(current_instance.get_number_variables()), 0);  //here we store how often variables occur in the shortest clauses
 
     for (auto & clause : current_instance.get_clauses()) {
-        if (clause.size() < HowShort) {
-            HowShort = clause.size();
+        if (std::get<1>(clause).size() < HowShort) {
+            HowShort = std::get<1>(clause).size();
             std::for_each(VariableOccurrences.begin(), VariableOccurrences.end(), [](int& n) {n=0;});
-            for (auto & literal : clause) {
+            for (auto & literal : std::get<1>(clause)) {
                 VariableOccurrences[std::abs(literal)-1] += 1;
             }
         }
-        else if (clause.size() == HowShort) {
-            for (auto & literal : clause) {
+        else if (std::get<1>(clause).size() == HowShort) {
+            for (auto & literal : std::get<1>(clause)) {
                 VariableOccurrences[std::abs(literal)-1] += 1;
             }
         }
@@ -44,7 +44,7 @@ bool a_sat(SAT & instance) {
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
+        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::pair<int,std::vector<int>> &clause) { return std::get<1>(clause).empty(); })) {
             int ChosenVariable = branching_rule(current_instance);
             SAT ClonedInstance = current_instance;
             if (ClonedInstance.set_variable_false(ChosenVariable)) {

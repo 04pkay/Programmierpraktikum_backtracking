@@ -38,6 +38,7 @@ SAT::SAT(char const* filename) {
     tt >> variables >> clauses;
 
     std::vector<int> clause;       // -variable for negated, variable for normal
+    int clausecount = 0;
     while (std::getline(file, line)) {
         std::stringstream pp(line);
         int temp;
@@ -47,8 +48,9 @@ SAT::SAT(char const* filename) {
                 clause.push_back(temp);
             }
             else {        //here we are at the end of the clause and clear it for the next to come
-                instance.push_back(clause);
+                instance.emplace(clausecount,clause);
                 clause.clear();
+                clausecount += 1;
             }
             pp >> temp;
         }
@@ -57,7 +59,7 @@ SAT::SAT(char const* filename) {
 
 void SAT::print() const{
     for (auto & clause : instance) {
-        for (auto & literal : clause) {
+        for (auto & literal : std::get<1>(clause)) {
                 std::cout << literal << " ; ";
         }
         std::cout << std::endl;
@@ -75,7 +77,7 @@ int SAT::get_number_clauses() const {
 
 void SAT::delete_clause(const int & clause) {
     clauses -= 1;
-    instance.erase(instance.begin() +clause);
+    instance.erase(clause);
 }
 
 void SAT::delete_literal(const int & clause, const int & variable) {
@@ -83,7 +85,7 @@ void SAT::delete_literal(const int & clause, const int & variable) {
     instance[clause].erase(NoMoreLiteral,instance[clause].end());
 }
 
-std::vector<std::vector<int>>& SAT::get_clauses() {
+std::unordered_map<int,std::vector<int>>& SAT::get_clauses() {
     return instance;
 }
 
@@ -145,7 +147,7 @@ int SAT::get_number_assigned_variables() const {
     return num_assigned_variables;
 }
 
-std::vector<std::vector<int>>::iterator SAT::erase_clause(const std::vector<std::vector<int>>::iterator & clause_iterator) {
+std::unordered_map<int,std::vector<int>>::iterator SAT::erase_clause(const std::unordered_map<int,std::vector<int>>::iterator & clause_iterator) {
     clauses -= 1;
     return instance.erase(clause_iterator);
 }
