@@ -47,10 +47,12 @@ bool a_sat(SAT & instance) {
         else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
             int ChosenVariable = branching_rule(current_instance);
             SAT ClonedInstance = current_instance;
-            ClonedInstance.set_variable_false(ChosenVariable);
-            DifferentPaths.push(ClonedInstance);
-            current_instance.set_variable_true(ChosenVariable);
-            DifferentPaths.emplace(std::move(current_instance));
+            if (ClonedInstance.set_variable_false(ChosenVariable)) {
+                DifferentPaths.push(ClonedInstance);
+            }
+            if (current_instance.set_variable_true(ChosenVariable)) {
+                DifferentPaths.emplace(std::move(current_instance));
+            }
         }
     }
     return false;   //we tried everything :(

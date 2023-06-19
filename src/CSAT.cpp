@@ -133,7 +133,7 @@ bool unit_propagation(SAT & instance) {
                 else {
                     ++clause_iterator;
                 }
-        }
+            }
         }
 
     }
@@ -169,7 +169,7 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
             instance = NegativeClonedInstance;
             return LocalProcessing::simplified;
         }
-        else if (!result_negative_clone and result_positive_clone) {    //hier sagt es mir die Bedingung wäre immer erfüllt, falls wir hier hinkommen?
+        else if (!result_negative_clone and result_positive_clone) {   //we fix the variable on true
             instance = PositiveClonedInstance;
             return LocalProcessing::simplified;
         }
@@ -189,35 +189,38 @@ bool c_sat(SAT & instance) {
     std::queue<SAT> DifferentPaths; //here we store the instances with different variable settings
     DifferentPaths.push(instance);
     bool tried_local_processing = false;
+    if (std::any_of(DifferentPaths.front().get_clauses().begin(), DifferentPaths.front().get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
+        return false;
+    }
     while (not DifferentPaths.empty()) {
-        SAT current_instance = std::move(DifferentPaths.front());
-        DifferentPaths.pop();
-        if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
+        if (DifferentPaths.front().get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
-            if (current_instance.get_number_assigned_variables() < 0.5*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
+        else if (DifferentPaths.front().get_number_assigned_variables() < (1-0.05*3)*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
                 tried_local_processing = false;
-                std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
+                std::pair chosen_variable = choose_variable(DifferentPaths.front(), SizeFactor);
                 if (std::get<1>(chosen_variable)) {
-                    SAT cloned_instance = current_instance;
-                    cloned_instance.set_variable_false(std::get<0>(chosen_variable));
-                    DifferentPaths.push(cloned_instance);
-                    current_instance.set_variable_true(std::get<0>(chosen_variable));
-                    DifferentPaths.emplace(std::move(current_instance));
+                    SAT cloned_instance = DifferentPaths.front();
+                    if (cloned_instance.set_variable_false(std::get<0>(chosen_variable))) {
+                        DifferentPaths.push(cloned_instance);
+                    }
+                    if (!DifferentPaths.front().set_variable_true(std::get<0>(chosen_variable))){
+                        DifferentPaths.pop();
+                    }
                 }
                 else {
-                    SAT cloned_instance = current_instance;
-                    cloned_instance.set_variable_true(std::get<0>(chosen_variable));
-                    DifferentPaths.push(cloned_instance);
-                    current_instance.set_variable_false(std::get<0>(chosen_variable));
-                    DifferentPaths.emplace(std::move(current_instance));
+                    SAT cloned_instance = DifferentPaths.front();
+                    if (cloned_instance.set_variable_true(std::get<0>(chosen_variable))) {
+                        DifferentPaths.push(cloned_instance);
+                    }
+                    if (!DifferentPaths.front().set_variable_false(std::get<0>(chosen_variable))){
+                        DifferentPaths.pop();
+                    }
                 }
             }
             else {  //local processing
-                LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
+                LocalProcessing result_local_processing = local_processing(DifferentPaths.front(), SizeFactor);
                 if (result_local_processing != LocalProcessing::backtrack) {    //dead-end, we try another next path
-                    DifferentPaths.emplace(std::move(current_instance));
                     if (result_local_processing == LocalProcessing::solved) {
                         return true;
                     }
@@ -225,8 +228,10 @@ bool c_sat(SAT & instance) {
                         tried_local_processing = true;
                     }
                 }
+                else {
+                    DifferentPaths.pop();
+                }
             }
-        }
     }
     return false;   //tried everything
 }

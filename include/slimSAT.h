@@ -12,8 +12,8 @@ class SAT {
 public:
     explicit SAT(char const* filename);
     void print() const;
-    void set_variable_false(const int & variable);
-    void set_variable_true(const int & variable);
+    bool set_variable_false(const int & variable);
+    bool set_variable_true(const int & variable);
     int get_number_variables() const;
     int get_number_assigned_variables() const;
     int get_number_clauses() const;

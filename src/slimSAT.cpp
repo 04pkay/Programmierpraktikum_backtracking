@@ -87,7 +87,7 @@ std::vector<std::vector<int>>& SAT::get_clauses() {
     return instance;
 }
 
-void SAT::set_variable_false(const int & variable) {
+bool SAT::set_variable_false(const int & variable) {
     num_assigned_variables += 1;
     for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to false
         bool satisfied = false;
@@ -106,11 +106,15 @@ void SAT::set_variable_false(const int & variable) {
         }
         else if (occurred) {
             delete_literal(clause, variable);
+            if (instance[clause].empty()) {
+                return false;
+            }
         }
     }
+    return true;
 }
 
-void SAT::set_variable_true(const int & variable) {
+bool SAT::set_variable_true(const int & variable) {
     num_assigned_variables += 1;
     for (int clause = 0; clause < instance.size(); clause++) {  //we set the variable to true
         bool satisfied = false;
@@ -129,8 +133,12 @@ void SAT::set_variable_true(const int & variable) {
         }
         else if (occurred) {
             delete_literal(clause, variable);
+            if (instance[clause].empty()) {
+                return false;
+            }
         }
     }
+    return true;
 }
 
 int SAT::get_number_assigned_variables() const {
