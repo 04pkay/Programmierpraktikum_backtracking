@@ -7,6 +7,7 @@
 #include <queue>
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
 
 int branching_rule(SAT & current_instance) {
     int HowShort = std::numeric_limits<int>::max();
@@ -35,24 +36,62 @@ int branching_rule(SAT & current_instance) {
     return ChosenVariable+1; //shift one up because how the variables are stored
 }
 
+SAT initialize_instance(SAT instance, const std::vector<int> & VariableSetting) {
+    for (int clause = 0; clause < instance.get_number_clauses(); clause++) {
+        bool occurred = false;
+        bool satisfied = false;
+        for (int & literal : instance.get_clauses()[clause]) {
+            if (VariableSetting[std::abs(literal)] != 0) {
+                if (literal == VariableSetting[std::abs(literal)]) {
+                    satisfied = true;
+                }
+                else {
+                    occurred = true;
+                    literal = 0;
+                }
+            }
+        }
+        if (satisfied) {
+            instance.get_clauses()[clause].clear();
+            instance.get_number_clauses() -= 1;
+        }
+        else if (occurred) {
+            instance.delete_literal(clause,0);
+        }
+    }
+    auto NoMoreEmptyClauses = std::remove_if(instance.get_clauses().begin(), instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); });
+    instance.get_clauses().erase(NoMoreEmptyClauses,instance.get_clauses().end());
+    return instance;
+}
+
 bool a_sat(SAT & instance) {
-    std::queue<SAT> DifferentPaths; //here we store the instances with different variable settings
-    DifferentPaths.push(instance);
+    if (std::any_of(instance.get_clauses().begin(), instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
+        return false;
+    }
+    std::queue<std::vector<int>> DifferentPaths; //here we store the different variable settings
+    std::vector<int> InitialSetting (int(instance.get_number_variables()+1), 0);
+    int InitialChosenVariable = branching_rule(instance);
+    InitialSetting[InitialChosenVariable] = InitialChosenVariable;
+    DifferentPaths.push(InitialSetting);
+    InitialSetting[InitialChosenVariable] = -InitialChosenVariable;
+    DifferentPaths.push(InitialSetting);
     while (not DifferentPaths.empty()) {
-        SAT current_instance = std::move(DifferentPaths.front());
+        std::vector<int> current_setting = std::move(DifferentPaths.front());
+        SAT current_instance = initialize_instance(instance,current_setting);
         DifferentPaths.pop();
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
-            int ChosenVariable = branching_rule(current_instance);
-            SAT ClonedInstance = current_instance;
-            if (ClonedInstance.set_variable_false(ChosenVariable)) {
-                DifferentPaths.push(ClonedInstance);
-            }
-            if (current_instance.set_variable_true(ChosenVariable)) {
-                DifferentPaths.emplace(std::move(current_instance));
-            }
+        int ChosenVariable = branching_rule(current_instance);
+        SAT ClonedInstance = current_instance;
+        std::vector<int> cloned_setting = current_setting;
+        if (ClonedInstance.set_variable_false(ChosenVariable)) {
+            cloned_setting[ChosenVariable] = -ChosenVariable;
+            DifferentPaths.push(cloned_setting);
+        }
+        if (current_instance.set_variable_true(ChosenVariable)) {
+            current_setting[ChosenVariable] = ChosenVariable;
+            DifferentPaths.push(std::move(current_setting));
         }
     }
     return false;   //we tried everything :(

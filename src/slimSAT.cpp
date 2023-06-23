@@ -69,7 +69,7 @@ int SAT::get_number_variables() const {
     return variables;
 }
 
-int SAT::get_number_clauses() const {
+int& SAT::get_number_clauses() {
     return clauses;
 }
 

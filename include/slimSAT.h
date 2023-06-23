@@ -16,7 +16,7 @@ public:
     bool set_variable_true(const int & variable);
     int get_number_variables() const;
     int get_number_assigned_variables() const;
-    int get_number_clauses() const;
+    int& get_number_clauses();
     void delete_clause(const int & clause);
     void delete_literal(const int & clause,const int & variable);
     std::vector<std::vector<int>>::iterator erase_clause(const std::vector<std::vector<int>>::iterator & clause_iterator);
