@@ -37,7 +37,7 @@ int branching_rule(SAT & current_instance) {
 }
 
 SAT initialize_instance(SAT instance, const std::vector<int> & VariableSetting) {
-    for (int clause = 0; clause < instance.get_number_clauses(); clause++) {
+    for (int clause = 0; clause < instance.get_clauses().size(); clause++) {
         bool occurred = false;
         bool satisfied = false;
         for (int & literal : instance.get_clauses()[clause]) {

@@ -6,6 +6,38 @@
 #include <vector>
 #include <cmath>
 #include <queue>
+#include <algorithm>
+#include <stack>
+
+
+
+SAT initialize_instance(SAT instance, const std::vector<int> & VariableSetting) {
+    for (int clause = 0; clause < instance.get_clauses().size(); clause++) {
+        bool occurred = false;
+        bool satisfied = false;
+        for (int & literal : instance.get_clauses()[clause]) {
+            if (VariableSetting[std::abs(literal)] != 0) {
+                if (literal == VariableSetting[std::abs(literal)]) {
+                    satisfied = true;
+                }
+                else {
+                    occurred = true;
+                    literal = 0;
+                }
+            }
+        }
+        if (satisfied) {
+            instance.get_clauses()[clause].clear();
+            instance.get_number_clauses() -= 1;
+        }
+        else if (occurred) {
+            instance.delete_literal(clause,0);
+        }
+    }
+    auto NoMoreEmptyClauses = std::remove_if(instance.get_clauses().begin(), instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); });
+    instance.get_clauses().erase(NoMoreEmptyClauses,instance.get_clauses().end());
+    return instance;
+}
 
 std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair(0,0));
@@ -87,7 +119,8 @@ std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const doub
     return std::make_pair(chosen_variable + 1, VariableOccurrences[chosen_variable].first >= VariableOccurrences[chosen_variable].second);  //we return the chosen variable and if there are more/equal positive occurrences than negative ones
 }
 
-bool unit_propagation(SAT & instance) {
+std::pair<bool,std::vector<int>> unit_propagation(SAT & instance) {
+    std::vector<int> SetVariables;
     SAT ClonedInstance = instance;
     bool found_variable_fix = true;
     while (found_variable_fix) {    //we want to stop after one iteration without change
@@ -96,6 +129,7 @@ bool unit_propagation(SAT & instance) {
             if (clause.size() == 1 and clause[0] != 0 and clause[0] != ClonedInstance.get_number_variables()+1) {
                 found_variable_fix = true;
                 int literal_fix = clause[0];
+                SetVariables.push_back(literal_fix);
                 for (auto & setclause : ClonedInstance.get_clauses()) {
                    for (auto & literal : setclause) {
                        if (literal == literal_fix) {
@@ -128,7 +162,8 @@ bool unit_propagation(SAT & instance) {
             }
             if (clause_iterator != ClonedInstance.get_clauses().end()) {
                 if (clause_iterator->empty()) { //this clause is now empty, that's a contradiction
-                    return false;
+                    SetVariables.clear();
+                    return std::make_pair(false,SetVariables);
                 }
                 else {
                     ++clause_iterator;
@@ -138,12 +173,13 @@ bool unit_propagation(SAT & instance) {
 
     }
     instance = ClonedInstance;  //we simplified the instance
-    return true;
+    return std::make_pair(true,SetVariables);
 }
 
 enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1, solved = 4};
 
-LocalProcessing local_processing(SAT & instance, const std::vector<const double> & SizeFactor) {
+std::pair<LocalProcessing,std::vector<int>> local_processing(SAT & instance, const std::vector<const double> & SizeFactor) {
+    std::vector<int> NoInformation {-1};
     std::vector<std::pair<int,double>> SortedVariables;
     for(int variable = 1; variable <= instance.get_number_variables(); variable++) {
         SortedVariables.emplace_back(variable,0);
@@ -160,78 +196,126 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
         SAT NegativeClonedInstance = instance;
         NegativeClonedInstance.set_variable_false(SortedVariables[variable].first);
         PositiveClonedInstance.set_variable_true(SortedVariables[variable].first);
-        bool result_negative_clone = unit_propagation(NegativeClonedInstance);  //remark: This may simplify the cloned instances
-        bool result_positive_clone = unit_propagation(PositiveClonedInstance);
-        if (!result_negative_clone and !result_positive_clone) {    //we found a contradiction
-            return LocalProcessing::backtrack;
+        std::pair result_negative_clone = unit_propagation(NegativeClonedInstance);  //remark: This may simplify the cloned instances
+        std::pair result_positive_clone = unit_propagation(PositiveClonedInstance);
+        result_negative_clone.second.push_back(-variable);
+        result_positive_clone.second.push_back(variable);
+        if (!result_negative_clone.first and !result_positive_clone.first) {    //we found a contradiction
+            return std::make_pair(LocalProcessing::backtrack,NoInformation);
         }
-        else if (result_negative_clone and !result_positive_clone) {    //we fix the variable on false
+        else if (result_negative_clone.first and !result_positive_clone.first) {    //we fix the variable on false
             instance = NegativeClonedInstance;
-            return LocalProcessing::simplified;
+            return std::make_pair(LocalProcessing::simplified,result_negative_clone.second);
         }
-        else if (!result_negative_clone and result_positive_clone) {   //we fix the variable on true
+        else if (!result_negative_clone.first and result_positive_clone.first) {   //we fix the variable on true
             instance = PositiveClonedInstance;
-            return LocalProcessing::simplified;
+            return std::make_pair(LocalProcessing::simplified,result_positive_clone.second);
         }
         else if (NegativeClonedInstance.get_clauses().empty() or PositiveClonedInstance.get_clauses().empty()) {    //we solved one of the instances, so we are done
-            return LocalProcessing::solved;
+            return std::make_pair(LocalProcessing::solved,NoInformation);
         }
     }
-    return LocalProcessing::not_simplified; //didn't help, we want to do normal algorithm again
+    return std::make_pair(LocalProcessing::not_simplified,NoInformation); //didn't help, we want to do normal algorithm again
+}
+
+enum class SettingInformation : int {pop = 1, flip = 0,};
+
+void backtrack(std::stack<std::pair<int,SettingInformation>> & DifferentPaths, std::vector<int> & VariableSetting) {
+    while (!DifferentPaths.empty() and DifferentPaths.top().second == SettingInformation::pop) {
+        VariableSetting[DifferentPaths.top().first] = 0;
+        DifferentPaths.pop();
+    }
+    if (!DifferentPaths.empty()) {
+        VariableSetting[DifferentPaths.top().first] = -VariableSetting[DifferentPaths.top().first];
+        DifferentPaths.top().second = SettingInformation::pop;
+    }
 }
 
 bool c_sat(SAT & instance) {
-    int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<int> & a, const std::vector<int> & b) {return a.size() < b.size();})).size();
-    std::vector<const double> SizeFactor {0};   //initialize with 0 so variable and place in vector line up
+    int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end(),[](const std::vector<int> &a, const std::vector<int> &b) {return a.size() < b.size();})).size();
+    std::vector<const double> SizeFactor{0};   //initialize with 0 so size and place in vector line up
     for (int size = 1; size <= size_of_biggest_clause; size++) {
-        SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
+        SizeFactor.push_back(-log(1 - 1 / pow((pow(2, size) - 1), 2)));
     }
-    std::queue<SAT> DifferentPaths; //here we store the instances with different variable settings
-    DifferentPaths.push(instance);
+    if (instance.get_clauses().empty()) {
+        return true;
+    }
+    std::stack<std::pair<int, SettingInformation>> DifferentPaths; //here we store the variables already set
+    std::vector<int> VariableSetting(int(instance.get_number_variables() + 1), 0);
+    std::pair initial_chosen_variable = choose_variable(instance, SizeFactor);
+    DifferentPaths.emplace(initial_chosen_variable.first, SettingInformation::flip);
+    if (initial_chosen_variable.second) {
+        VariableSetting[initial_chosen_variable.first] = initial_chosen_variable.first;
+    }
+    else {
+        VariableSetting[initial_chosen_variable.first] = -initial_chosen_variable.first;
+    }
     bool tried_local_processing = false;
-    if (std::any_of(DifferentPaths.front().get_clauses().begin(), DifferentPaths.front().get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
+    if (std::any_of(instance.get_clauses().begin(), instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
         return false;
     }
     while (not DifferentPaths.empty()) {
-        if (DifferentPaths.front().get_number_clauses() == 0) {   //clauses get deleted, when satisfied
+        SAT current_instance = initialize_instance(instance, VariableSetting);
+        if (current_instance.get_clauses().empty()) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (DifferentPaths.front().get_number_assigned_variables() < (1-0.05*3)*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
-                tried_local_processing = false;
-                std::pair chosen_variable = choose_variable(DifferentPaths.front(), SizeFactor);
-                if (std::get<1>(chosen_variable)) {
-                    SAT cloned_instance = DifferentPaths.front();
-                    if (cloned_instance.set_variable_false(std::get<0>(chosen_variable))) {
-                        DifferentPaths.push(cloned_instance);
+        else if (/*DifferentPaths.size() < (1 - 0.05 * 3) * instance.get_number_variables() or tried_local_processing*/ true) { //like a_sat but with refined chosen_variable
+            tried_local_processing = false;
+            std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
+            if (chosen_variable.second) {
+                SAT cloned_instance = current_instance;
+                if (cloned_instance.set_variable_false(chosen_variable.first)) {
+                    VariableSetting[chosen_variable.first] = -chosen_variable.first;
+                    if (current_instance.set_variable_true(chosen_variable.first)) {
+                        DifferentPaths.emplace(chosen_variable.first, SettingInformation::flip);
                     }
-                    if (!DifferentPaths.front().set_variable_true(std::get<0>(chosen_variable))){
-                        DifferentPaths.pop();
+                    else {
+                        DifferentPaths.emplace(chosen_variable.first,SettingInformation::pop);
                     }
                 }
+                else if (current_instance.set_variable_true(chosen_variable.first)) {
+                    VariableSetting[chosen_variable.first] = chosen_variable.first;
+                    DifferentPaths.emplace(chosen_variable.first, SettingInformation::pop);
+                }
                 else {
-                    SAT cloned_instance = DifferentPaths.front();
-                    if (cloned_instance.set_variable_true(std::get<0>(chosen_variable))) {
-                        DifferentPaths.push(cloned_instance);
-                    }
-                    if (!DifferentPaths.front().set_variable_false(std::get<0>(chosen_variable))){
-                        DifferentPaths.pop();
+                    backtrack(DifferentPaths, VariableSetting);
+                }
+            }
+            else {
+                SAT cloned_instance = current_instance;
+                if (cloned_instance.set_variable_true(chosen_variable.first)) {
+                    DifferentPaths.emplace(chosen_variable.first, SettingInformation::flip);
+                    VariableSetting[chosen_variable.first] = chosen_variable.first;
+                }
+                else if (current_instance.set_variable_false(chosen_variable.first)) {
+                    DifferentPaths.emplace(chosen_variable.first, SettingInformation::pop);
+                    VariableSetting[chosen_variable.first] = -chosen_variable.first;
+                }
+                else {
+                    backtrack(DifferentPaths, VariableSetting);
+                }
+            }
+        }
+        else {  //local processing
+            std::pair<LocalProcessing, std::vector<int>> result_local_processing = local_processing(current_instance, SizeFactor);
+            if (result_local_processing.first != LocalProcessing::backtrack) {    //dead-end, we try another next path
+                if (result_local_processing.first == LocalProcessing::solved) {
+                    return true;
+                }
+                else if (result_local_processing.first == LocalProcessing::not_simplified) {  //local processing didn't help
+                    tried_local_processing = true;
+                }
+                else {
+                    for (const auto & literal: result_local_processing.second) {
+                        DifferentPaths.emplace(std::abs(literal), SettingInformation::pop);
+                        VariableSetting[std::abs(literal)] = literal;
                     }
                 }
             }
-            else {  //local processing
-                LocalProcessing result_local_processing = local_processing(DifferentPaths.front(), SizeFactor);
-                if (result_local_processing != LocalProcessing::backtrack) {    //dead-end, we try another next path
-                    if (result_local_processing == LocalProcessing::solved) {
-                        return true;
-                    }
-                    if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
-                        tried_local_processing = true;
-                    }
-                }
-                else {
-                    DifferentPaths.pop();
-                }
+            else {
+                backtrack(DifferentPaths, VariableSetting);
             }
+        }
     }
     return false;   //tried everything
 }

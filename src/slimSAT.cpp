@@ -100,7 +100,7 @@ bool SAT::set_variable_false(const int & variable) {
                 }
             }
         }
-        if (occurred and satisfied) {
+        if (satisfied) {
             delete_clause(clause);
             clause -= 1;
         }
@@ -127,7 +127,7 @@ bool SAT::set_variable_true(const int & variable) {
                 }
             }
         }
-        if (occurred and satisfied) {
+        if (satisfied) {
             delete_clause(clause);
             clause -= 1;
         }
