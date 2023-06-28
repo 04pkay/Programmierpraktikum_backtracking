@@ -203,9 +203,11 @@ std::pair<LocalProcessing,std::vector<int>> local_processing(SAT & instance, con
             return std::make_pair(LocalProcessing::backtrack,NoInformation);
         }
         else if (result_negative_clone and !result_positive_clone) {    //we fix the variable on false
+            instance = std::move(negative_cloned_instance);
             return std::make_pair(LocalProcessing::simplified,SetVariablesNegative);
         }
         else if (!result_negative_clone and result_positive_clone) {   //we fix the variable on true
+            instance = std::move(positive_cloned_instance);
             return std::make_pair(LocalProcessing::simplified,SetVariablesPositive);
         }
         else if (negative_cloned_instance.get_clauses().empty() or positive_cloned_instance.get_clauses().empty()) {    //we solved one of the instances, so we are done
@@ -251,8 +253,13 @@ bool c_sat(SAT & instance) {
     if (std::any_of(instance.get_clauses().begin(), instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
         return false;
     }
+    bool initialize = false;
+    SAT current_instance = initialize_instance(instance, VariableSetting);
     while (not DifferentPaths.empty()) {
-        SAT current_instance = initialize_instance(instance, VariableSetting);
+        if (initialize) {
+            current_instance = initialize_instance(instance, VariableSetting);
+            initialize = false;
+        }
         if (current_instance.get_clauses().empty()) {   //clauses get deleted, when satisfied
             return true;
         }
@@ -261,35 +268,44 @@ bool c_sat(SAT & instance) {
             std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
             if (chosen_variable.second) {
                 SAT cloned_instance = current_instance;
-                if (cloned_instance.set_variable_false(chosen_variable.first)) {
+                if (current_instance.set_variable_false(chosen_variable.first)) {
                     VariableSetting[chosen_variable.first] = -chosen_variable.first;
-                    if (current_instance.set_variable_true(chosen_variable.first)) {
+                    if (cloned_instance.set_variable_true(chosen_variable.first)) {
                         DifferentPaths.emplace(chosen_variable.first, SettingInformation::flip);
                     }
                     else {
                         DifferentPaths.emplace(chosen_variable.first,SettingInformation::pop);
                     }
                 }
-                else if (current_instance.set_variable_true(chosen_variable.first)) {
+                else if (cloned_instance.set_variable_true(chosen_variable.first)) {
+                    current_instance = std::move(cloned_instance);
                     VariableSetting[chosen_variable.first] = chosen_variable.first;
                     DifferentPaths.emplace(chosen_variable.first, SettingInformation::pop);
                 }
                 else {
                     backtrack(DifferentPaths, VariableSetting);
+                    initialize = true;
                 }
             }
             else {
                 SAT cloned_instance = current_instance;
-                if (cloned_instance.set_variable_true(chosen_variable.first)) {
-                    DifferentPaths.emplace(chosen_variable.first, SettingInformation::flip);
+                if (current_instance.set_variable_true(chosen_variable.first)) {
                     VariableSetting[chosen_variable.first] = chosen_variable.first;
+                    if (cloned_instance.set_variable_false(chosen_variable.first)) {
+                        DifferentPaths.emplace(chosen_variable.first, SettingInformation::flip);
+                    }
+                    else {
+                        DifferentPaths.emplace(chosen_variable.first, SettingInformation::pop);
+                    }
                 }
-                else if (current_instance.set_variable_false(chosen_variable.first)) {
+                else if (cloned_instance.set_variable_false(chosen_variable.first)) {
+                    current_instance = std::move(cloned_instance);
                     DifferentPaths.emplace(chosen_variable.first, SettingInformation::pop);
                     VariableSetting[chosen_variable.first] = -chosen_variable.first;
                 }
                 else {
                     backtrack(DifferentPaths, VariableSetting);
+                    initialize = true;
                 }
             }
         }
@@ -311,6 +327,7 @@ bool c_sat(SAT & instance) {
             }
             else {
                 backtrack(DifferentPaths, VariableSetting);
+                initialize = true;
             }
         }
     }
