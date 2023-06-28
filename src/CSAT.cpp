@@ -119,8 +119,7 @@ std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const doub
     return std::make_pair(chosen_variable + 1, VariableOccurrences[chosen_variable].first >= VariableOccurrences[chosen_variable].second);  //we return the chosen variable and if there are more/equal positive occurrences than negative ones
 }
 
-std::pair<bool,std::vector<int>> unit_propagation(SAT & instance) {
-    std::vector<int> SetVariables;
+bool unit_propagation(SAT & instance, std::vector<int> & SetVariables) {
     SAT ClonedInstance = instance;
     bool found_variable_fix = true;
     while (found_variable_fix) {    //we want to stop after one iteration without change
@@ -163,7 +162,7 @@ std::pair<bool,std::vector<int>> unit_propagation(SAT & instance) {
             if (clause_iterator != ClonedInstance.get_clauses().end()) {
                 if (clause_iterator->empty()) { //this clause is now empty, that's a contradiction
                     SetVariables.clear();
-                    return std::make_pair(false,SetVariables);
+                    return false;
                 }
                 else {
                     ++clause_iterator;
@@ -173,7 +172,7 @@ std::pair<bool,std::vector<int>> unit_propagation(SAT & instance) {
 
     }
     instance = ClonedInstance;  //we simplified the instance
-    return std::make_pair(true,SetVariables);
+    return true;
 }
 
 enum class LocalProcessing : int {backtrack = -1, not_simplified = 0, simplified = 1, solved = 4};
@@ -192,26 +191,24 @@ std::pair<LocalProcessing,std::vector<int>> local_processing(SAT & instance, con
     std::sort(SortedVariables.begin(), SortedVariables.end(), [] (const std::pair<int,double> & a, const std::pair<int,double> & b) {return a.second > b.second;});
     //we now have the variables sorted
     for (int variable = 0; variable < 0.05*SortedVariables.size(); variable++) {
-        SAT PositiveClonedInstance = instance;
-        SAT NegativeClonedInstance = instance;
-        NegativeClonedInstance.set_variable_false(SortedVariables[variable].first);
-        PositiveClonedInstance.set_variable_true(SortedVariables[variable].first);
-        std::pair result_negative_clone = unit_propagation(NegativeClonedInstance);  //remark: This may simplify the cloned instances
-        std::pair result_positive_clone = unit_propagation(PositiveClonedInstance);
-        result_negative_clone.second.push_back(-variable);
-        result_positive_clone.second.push_back(variable);
-        if (!result_negative_clone.first and !result_positive_clone.first) {    //we found a contradiction
+        SAT positive_cloned_instance = instance;
+        SAT negative_cloned_instance = instance;
+        std::vector<int> SetVariablesNegative {-SortedVariables[variable].first};
+        std::vector<int> SetVariablesPositive {SortedVariables[variable].first};
+        negative_cloned_instance.set_variable_false(SortedVariables[variable].first);
+        positive_cloned_instance.set_variable_true(SortedVariables[variable].first);
+        bool result_negative_clone = unit_propagation(negative_cloned_instance, SetVariablesNegative);  //remark: This may simplify the cloned instances
+        bool result_positive_clone = unit_propagation(positive_cloned_instance, SetVariablesPositive);
+        if (!result_negative_clone and !result_positive_clone) {    //we found a contradiction
             return std::make_pair(LocalProcessing::backtrack,NoInformation);
         }
-        else if (result_negative_clone.first and !result_positive_clone.first) {    //we fix the variable on false
-            instance = NegativeClonedInstance;
-            return std::make_pair(LocalProcessing::simplified,result_negative_clone.second);
+        else if (result_negative_clone and !result_positive_clone) {    //we fix the variable on false
+            return std::make_pair(LocalProcessing::simplified,SetVariablesNegative);
         }
-        else if (!result_negative_clone.first and result_positive_clone.first) {   //we fix the variable on true
-            instance = PositiveClonedInstance;
-            return std::make_pair(LocalProcessing::simplified,result_positive_clone.second);
+        else if (!result_negative_clone and result_positive_clone) {   //we fix the variable on true
+            return std::make_pair(LocalProcessing::simplified,SetVariablesPositive);
         }
-        else if (NegativeClonedInstance.get_clauses().empty() or PositiveClonedInstance.get_clauses().empty()) {    //we solved one of the instances, so we are done
+        else if (negative_cloned_instance.get_clauses().empty() or positive_cloned_instance.get_clauses().empty()) {    //we solved one of the instances, so we are done
             return std::make_pair(LocalProcessing::solved,NoInformation);
         }
     }
@@ -259,7 +256,7 @@ bool c_sat(SAT & instance) {
         if (current_instance.get_clauses().empty()) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (/*DifferentPaths.size() < (1 - 0.05 * 3) * instance.get_number_variables() or tried_local_processing*/ true) { //like a_sat but with refined chosen_variable
+        else if (DifferentPaths.size() < (1 - 0.05 * 3) * instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
             tried_local_processing = false;
             std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
             if (chosen_variable.second) {
