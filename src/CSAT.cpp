@@ -9,68 +9,41 @@
 
 std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair(0,0));
-    std::vector<std::vector<std::vector<int>>::iterator> ClausesLenTwo;
-    for (auto clause = instance.get_clauses().begin(); clause != instance.get_clauses().end(); clause++) {
-        if ((*clause).size() == 2) {
-            ClausesLenTwo.push_back(clause);
+    std::vector<std::pair<int,int>> VariablesInClausesLenTwo (int(instance.get_number_variables()+1),std::make_pair(0,0));
+    for (auto & clause : instance.get_clauses()) {
+        const int clause_size = clause.size();
+        if (clause_size == 2) {
+            //ClausesLenTwo.push_back(&clause);
+            if (clause[0] > 0) {
+                VariablesInClausesLenTwo[clause[0]].first += 1;
+            }
+            else {
+                VariablesInClausesLenTwo[-clause[0]].second += 1;
+            }
+            if (clause[1] > 0) {
+                VariablesInClausesLenTwo[clause[1]].first += 1;
+            }
+            else {
+                VariablesInClausesLenTwo[-clause[1]].second += 1;
+            }
         }
-        for (auto & literal : *clause) {
+        for (auto & literal : clause) {
             if (literal > 0) {   //positive occurrence
-                VariableOccurrences[std::abs(literal)-1].first += SizeFactor[(*clause).size()];
+                VariableOccurrences[literal-1].first += SizeFactor[clause_size];
             }
             else {  //negative occurrence
-                VariableOccurrences[std::abs(literal)-1].second += SizeFactor[(*clause).size()];
+                VariableOccurrences[-literal-1].second += SizeFactor[clause_size];
             }
         }
     }
 
-    for (auto & clausefix : ClausesLenTwo) {
-        if ((*clausefix)[0] < 0 and (*clausefix)[1] < 0) { //both variables negated
-            for (auto & clause : instance.get_clauses()) {
-                for (auto & literal : clause) {
-                    if (-literal == (*clausefix)[0]) {
-                        VariableOccurrences[-(*clausefix)[1] - 1].second += SizeFactor[clause.size()];
-                    }
-                    if (-literal == (*clausefix)[1]) {
-                        VariableOccurrences[-(*clausefix)[0] - 1].second += SizeFactor[clause.size()];
-                    }
-                }
+    for (const auto & clause : instance.get_clauses()) {
+        for (const auto & literal : clause) {
+            if (literal > 0 and VariableOccurrences[literal - 1].first < 99999) {
+                VariableOccurrences[literal - 1].first += SizeFactor[clause.size()]*VariablesInClausesLenTwo[literal].second;
             }
-        }
-        else if ((*clausefix)[0] > 0 and (*clausefix)[1] < 0) { //only second variable negated
-            for (auto & clause : instance.get_clauses()) {
-                for (auto & literal: clause) {
-                    if (-literal == (*clausefix)[0]) {
-                        VariableOccurrences[-(*clausefix)[1] - 1].second += SizeFactor[clause.size()];
-                    }
-                    if (-literal == (*clausefix)[1]) {
-                        VariableOccurrences[(*clausefix)[0] - 1].first += SizeFactor[clause.size()];
-                    }
-                }
-            }
-        }
-        else if ((*clausefix)[0] < 0 and (*clausefix)[1] > 0) { //only first variable negated
-            for (auto & clause : instance.get_clauses()) {
-                for (auto & literal: clause) {
-                    if (-literal == (*clausefix)[0]) {
-                        VariableOccurrences[(*clausefix)[1] - 1].first += SizeFactor[clause.size()];
-                    }
-                    if (-literal == (*clausefix)[1]) {
-                        VariableOccurrences[-(*clausefix)[0] - 1].second += SizeFactor[clause.size()];
-                    }
-                }
-            }
-        }
-        else { //both positive
-            for (auto & clause : instance.get_clauses()) {
-                for (auto & literal: clause) {
-                    if (-literal == (*clausefix)[0]) {
-                        VariableOccurrences[(*clausefix)[1] - 1].first += SizeFactor[clause.size()];
-                    }
-                    if (-literal == (*clausefix)[1]) {
-                        VariableOccurrences[(*clausefix)[0] - 1].first += SizeFactor[clause.size()];
-                    }
-                }
+            else if (literal < 0 and VariableOccurrences[-literal - 1].second < 99999){
+                VariableOccurrences[-literal - 1].second += SizeFactor[clause.size()]*VariablesInClausesLenTwo[-literal].first;
             }
         }
     }
