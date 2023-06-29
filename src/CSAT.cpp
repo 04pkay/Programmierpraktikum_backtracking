@@ -5,7 +5,8 @@
 #include <slimSAT.h>
 #include <vector>
 #include <cmath>
-#include <queue>
+#include <stack>
+#include <algorithm>
 
 std::pair<int,bool> choose_variable(SAT & instance, const std::vector<const double> & SizeFactor) {
     std::vector<std::pair<double,double>> VariableOccurrences(int(instance.get_number_variables()), std::make_pair(0,0));
@@ -155,54 +156,54 @@ LocalProcessing local_processing(SAT & instance, const std::vector<const double>
 
 bool c_sat(SAT & instance) {
     int size_of_biggest_clause = (*std::max_element(instance.get_clauses().begin(), instance.get_clauses().end() , [] (const std::vector<int> & a, const std::vector<int> & b) {return a.size() < b.size();})).size();
-    std::vector<const double> SizeFactor {0};   //initialize with 0 so variable and place in vector line up
+    std::vector<const double> SizeFactor {0};   //initialize with 0 so size and place in vector line up
     for (int size = 1; size <= size_of_biggest_clause; size++) {
         SizeFactor.push_back(-log(1-1/pow((pow(2, size) -1),2)));
     }
-    std::queue<SAT> DifferentPaths; //here we store the instances with different variable settings
+    std::stack<SAT> DifferentPaths; //here we store the instances with different variable settings
     DifferentPaths.push(instance);
     bool tried_local_processing = false;
-    if (std::any_of(DifferentPaths.front().get_clauses().begin(), DifferentPaths.front().get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
+    if (std::any_of(DifferentPaths.top().get_clauses().begin(), DifferentPaths.top().get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
         return false;
     }
     while (not DifferentPaths.empty()) {
-        if (DifferentPaths.front().get_number_clauses() == 0) {   //clauses get deleted, when satisfied
+        SAT current_instance = std::move(DifferentPaths.top());
+        DifferentPaths.pop();
+        if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
-        else if (DifferentPaths.front().get_number_assigned_variables() < (1-0.05*3)*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
+        else if (current_instance.get_number_assigned_variables() < (1-0.05*3)*instance.get_number_variables() or tried_local_processing) { //like a_sat but with refined chosen_variable
                 tried_local_processing = false;
-                std::pair chosen_variable = choose_variable(DifferentPaths.front(), SizeFactor);
+                std::pair chosen_variable = choose_variable(current_instance, SizeFactor);
                 if (std::get<1>(chosen_variable)) {
-                    SAT cloned_instance = DifferentPaths.front();
-                    if (cloned_instance.set_variable_false(std::get<0>(chosen_variable))) {
+                    SAT cloned_instance = current_instance;
+                    if (cloned_instance.set_variable_false(chosen_variable.first)) {
                         DifferentPaths.push(cloned_instance);
                     }
-                    if (!DifferentPaths.front().set_variable_true(std::get<0>(chosen_variable))){
-                        DifferentPaths.pop();
+                    if (current_instance.set_variable_true(chosen_variable.first)){
+                        DifferentPaths.push(std::move(current_instance));
                     }
                 }
                 else {
-                    SAT cloned_instance = DifferentPaths.front();
-                    if (cloned_instance.set_variable_true(std::get<0>(chosen_variable))) {
+                    SAT cloned_instance = current_instance;
+                    if (cloned_instance.set_variable_true(chosen_variable.first)) {
                         DifferentPaths.push(cloned_instance);
                     }
-                    if (!DifferentPaths.front().set_variable_false(std::get<0>(chosen_variable))){
-                        DifferentPaths.pop();
+                    if (current_instance.set_variable_false(chosen_variable.first)){
+                        DifferentPaths.push(std::move(current_instance));
                     }
                 }
             }
             else {  //local processing
-                LocalProcessing result_local_processing = local_processing(DifferentPaths.front(), SizeFactor);
+                LocalProcessing result_local_processing = local_processing(current_instance, SizeFactor);
                 if (result_local_processing != LocalProcessing::backtrack) {    //dead-end, we try another next path
+                    DifferentPaths.push(std::move(current_instance));
                     if (result_local_processing == LocalProcessing::solved) {
                         return true;
                     }
                     if (result_local_processing == LocalProcessing::not_simplified) {  //local processing didn't help
                         tried_local_processing = true;
                     }
-                }
-                else {
-                    DifferentPaths.pop();
                 }
             }
     }
