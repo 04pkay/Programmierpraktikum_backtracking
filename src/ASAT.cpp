@@ -12,16 +12,16 @@ int branching_rule(SAT & current_instance) {
     int HowShort = std::numeric_limits<int>::max();
     std::vector<int> VariableOccurrences(int(current_instance.get_number_variables()), 0);  //here we store how often variables occur in the shortest clauses
 
-    for (auto & clause : current_instance.get_clauses()) {
+    for (const auto & clause : current_instance.get_clauses()) {
         if (clause.size() < HowShort) {
             HowShort = clause.size();
             std::for_each(VariableOccurrences.begin(), VariableOccurrences.end(), [](int& n) {n=0;});
-            for (auto & literal : clause) {
+            for (const auto & literal : clause) {
                 VariableOccurrences[std::abs(literal)-1] += 1;
             }
         }
         else if (clause.size() == HowShort) {
-            for (auto & literal : clause) {
+            for (const auto & literal : clause) {
                 VariableOccurrences[std::abs(literal)-1] += 1;
             }
         }
@@ -38,12 +38,16 @@ int branching_rule(SAT & current_instance) {
 bool a_sat(SAT & instance) {
     std::queue<SAT> DifferentPaths; //here we store the instances with different variable settings
     DifferentPaths.push(instance);
+
     while (not DifferentPaths.empty()) {
         SAT current_instance = std::move(DifferentPaths.front());
         DifferentPaths.pop();
+
         if (current_instance.get_number_clauses() == 0) {   //clauses get deleted, when satisfied
             return true;
         }
+
+        //if we fail this test, we found an empty clause, so kick out this instance (i.e. don't move it back in)
         else if (std::none_of(current_instance.get_clauses().begin(), current_instance.get_clauses().end(),[](const std::vector<int> &clause) { return clause.empty(); })) {
             int ChosenVariable = branching_rule(current_instance);
             SAT ClonedInstance = current_instance;

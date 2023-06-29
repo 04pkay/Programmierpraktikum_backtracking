@@ -48,35 +48,35 @@ build cmake_object_order_depends_target_sat: phony || CMakeFiles/sat.dir
 
 build CMakeFiles/sat.dir/src/main.cpp.o: CXX_COMPILER__sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/main.cpp || cmake_object_order_depends_target_sat
   DEP_FILE = CMakeFiles/sat.dir/src/main.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/sat.dir
   OBJECT_FILE_DIR = CMakeFiles/sat.dir/src
 
 build CMakeFiles/sat.dir/src/SAT.cpp.o: CXX_COMPILER__sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/SAT.cpp || cmake_object_order_depends_target_sat
   DEP_FILE = CMakeFiles/sat.dir/src/SAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/sat.dir
   OBJECT_FILE_DIR = CMakeFiles/sat.dir/src
 
 build CMakeFiles/sat.dir/src/backtracking.cpp.o: CXX_COMPILER__sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/backtracking.cpp || cmake_object_order_depends_target_sat
   DEP_FILE = CMakeFiles/sat.dir/src/backtracking.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/sat.dir
   OBJECT_FILE_DIR = CMakeFiles/sat.dir/src
 
 build CMakeFiles/sat.dir/src/ASAT.cpp.o: CXX_COMPILER__sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/ASAT.cpp || cmake_object_order_depends_target_sat
   DEP_FILE = CMakeFiles/sat.dir/src/ASAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/sat.dir
   OBJECT_FILE_DIR = CMakeFiles/sat.dir/src
 
 build CMakeFiles/sat.dir/src/CSAT.cpp.o: CXX_COMPILER__sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/CSAT.cpp || cmake_object_order_depends_target_sat
   DEP_FILE = CMakeFiles/sat.dir/src/CSAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/sat.dir
   OBJECT_FILE_DIR = CMakeFiles/sat.dir/src
@@ -108,21 +108,21 @@ build cmake_object_order_depends_target_slim_a-sat: phony || CMakeFiles/slim_a-s
 
 build CMakeFiles/slim_a-sat.dir/src/main.cpp.o: CXX_COMPILER__slim_a-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/main.cpp || cmake_object_order_depends_target_slim_a-sat
   DEP_FILE = CMakeFiles/slim_a-sat.dir/src/main.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/slim_a-sat.dir
   OBJECT_FILE_DIR = CMakeFiles/slim_a-sat.dir/src
 
 build CMakeFiles/slim_a-sat.dir/src/slimSAT.cpp.o: CXX_COMPILER__slim_a-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/slimSAT.cpp || cmake_object_order_depends_target_slim_a-sat
   DEP_FILE = CMakeFiles/slim_a-sat.dir/src/slimSAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/slim_a-sat.dir
   OBJECT_FILE_DIR = CMakeFiles/slim_a-sat.dir/src
 
 build CMakeFiles/slim_a-sat.dir/src/ASAT.cpp.o: CXX_COMPILER__slim_a-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/ASAT.cpp || cmake_object_order_depends_target_slim_a-sat
   DEP_FILE = CMakeFiles/slim_a-sat.dir/src/ASAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/slim_a-sat.dir
   OBJECT_FILE_DIR = CMakeFiles/slim_a-sat.dir/src
@@ -154,21 +154,21 @@ build cmake_object_order_depends_target_slim-c-sat: phony || CMakeFiles/slim-c-s
 
 build CMakeFiles/slim-c-sat.dir/src/main.cpp.o: CXX_COMPILER__slim-c-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/main.cpp || cmake_object_order_depends_target_slim-c-sat
   DEP_FILE = CMakeFiles/slim-c-sat.dir/src/main.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/slim-c-sat.dir
   OBJECT_FILE_DIR = CMakeFiles/slim-c-sat.dir/src
 
 build CMakeFiles/slim-c-sat.dir/src/slimSAT.cpp.o: CXX_COMPILER__slim-c-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/slimSAT.cpp || cmake_object_order_depends_target_slim-c-sat
   DEP_FILE = CMakeFiles/slim-c-sat.dir/src/slimSAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/slim-c-sat.dir
   OBJECT_FILE_DIR = CMakeFiles/slim-c-sat.dir/src
 
 build CMakeFiles/slim-c-sat.dir/src/CSAT.cpp.o: CXX_COMPILER__slim-c-sat_Debug /Users/pascalkessler/Studium/SoSe$ 23/Programmierpraktikum/src/CSAT.cpp || cmake_object_order_depends_target_slim-c-sat
   DEP_FILE = CMakeFiles/slim-c-sat.dir/src/CSAT.cpp.o.d
-  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++17
+  FLAGS = -O0 -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -mmacosx-version-min=13.0 -std=gnu++20
   INCLUDES = -I"/Users/pascalkessler/Studium/SoSe 23/Programmierpraktikum/include"
   OBJECT_DIR = CMakeFiles/slim-c-sat.dir
   OBJECT_FILE_DIR = CMakeFiles/slim-c-sat.dir/src

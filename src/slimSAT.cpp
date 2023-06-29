@@ -7,6 +7,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 SAT::SAT(char const* filename) {
     num_assigned_variables = 0;
@@ -73,11 +74,6 @@ int SAT::get_number_clauses() const {
     return clauses;
 }
 
-void SAT::delete_clause(const int & clause) {
-    clauses -= 1;
-    instance.erase(instance.begin() +clause);
-}
-
 void SAT::delete_literal(const int & clause, const int & variable) {
     auto NoMoreLiteral = std::remove_if(begin(instance[clause]), end(instance[clause]),[variable](int literal) { return (literal == variable or -literal == variable);});
     instance[clause].erase(NoMoreLiteral,instance[clause].end());
@@ -100,9 +96,9 @@ bool SAT::set_variable_false(const int & variable) {
                 }
             }
         }
-        if (occurred and satisfied) {
-            delete_clause(clause);
-            clause -= 1;
+        if (satisfied) {
+            clauses -= 1;
+            instance[clause].clear();
         }
         else if (occurred) {
             delete_literal(clause, variable);
@@ -111,6 +107,8 @@ bool SAT::set_variable_false(const int & variable) {
             }
         }
     }
+    auto no_more_empty_clauses = std::remove_if(instance.begin(),instance.end(),[] (std::vector<int> & clause) {return clause.empty();});
+    instance.erase(no_more_empty_clauses,instance.end());
     return true;
 }
 
@@ -127,9 +125,9 @@ bool SAT::set_variable_true(const int & variable) {
                 }
             }
         }
-        if (occurred and satisfied) {
-            delete_clause(clause);
-            clause -= 1;
+        if (satisfied) {
+            clauses -= 1;
+            instance[clause].clear();
         }
         else if (occurred) {
             delete_literal(clause, variable);
@@ -138,6 +136,8 @@ bool SAT::set_variable_true(const int & variable) {
             }
         }
     }
+    auto no_more_empty_clauses = std::remove_if(instance.begin(),instance.end(),[] (std::vector<int> & clause) {return clause.empty();});
+    instance.erase(no_more_empty_clauses,instance.end());
     return true;
 }
 
